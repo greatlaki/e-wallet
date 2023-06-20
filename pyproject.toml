@@ -14,8 +14,15 @@ django-environ = "^0.10.0"
 pytest = "^7.3.2"
 psycopg2-binary = "^2.9.6"
 factory-boy = "^3.2.1"
+pytest-django = "^4.5.2"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "app.settings"
+pythonpath = "backend"
+testpaths = "tests"
+python_files = "tests.py test_*.py *_tests.py"

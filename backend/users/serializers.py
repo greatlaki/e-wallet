@@ -8,8 +8,8 @@ from users.models import User
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField(validators=[validate_password])
-    confirm_password = serializers.CharField(write_only=True)
+    password = serializers.CharField(required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(required=True, write_only=True)
 
     class Meta:
         model = User
@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField()
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
