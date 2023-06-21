@@ -48,12 +48,10 @@ jobs:
       - name: Run DB migrations
         run: |
             cd backend
-            source .venv/bin/activate
-            python manage.py migrate
+            python manage.py migrate --noinput
 
       - name: Test
         run: |
-            source .venv/bin/activate
             poetry run pytest
 
       - name: Lint
