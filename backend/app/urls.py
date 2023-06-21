@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 api = [
     path("wallets/", include("wallets.urls")),
@@ -8,5 +8,5 @@ api = [
 
 urlpatterns = [
     path("api/", include(api)),
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 ]

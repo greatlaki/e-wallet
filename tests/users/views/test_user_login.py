@@ -1,6 +1,6 @@
 import ast
-import pytest
 
+import pytest
 from users.models import User
 
 

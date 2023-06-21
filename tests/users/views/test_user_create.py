@@ -1,4 +1,5 @@
 import pytest
+
 from tests.users.factories import UserFactory
 
 
@@ -88,4 +89,3 @@ class TestPost:
 
         assert response.status_code == 400
         assert response.data["email"][0] == "This email already exist"
-

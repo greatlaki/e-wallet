@@ -1,11 +1,9 @@
-from rest_framework import generics, status, permissions
+from django.contrib.auth import logout
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from users.models import User
-from django.contrib.auth import logout
-
-from users.serializers import RegisterSerializer, LoginSerializer
+from users.serializers import LoginSerializer, RegisterSerializer
 
 
 class RegisterApiView(generics.CreateAPIView):
@@ -28,4 +26,6 @@ class LogoutAPIView(APIView):
 
     def post(self, request):
         logout(request)
-        return Response({"success": "Successfully logged out"}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": "Successfully logged out"}, status=status.HTTP_200_OK
+        )
