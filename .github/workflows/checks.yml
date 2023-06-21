@@ -62,8 +62,12 @@ jobs:
 #            python manage.py migrate --noinput
 
       - name: Test
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         run: |
-            source .venv/bin/activate
             poetry run pytest
 
       - name: Lint
