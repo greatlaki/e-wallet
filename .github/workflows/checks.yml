@@ -39,19 +39,30 @@ jobs:
         uses: snok/install-poetry@v1
         with:
           version: ${{env.POETRY_VERSION}}
+          virtualenvs-create: true
           virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install
 
       - name: Run DB migrations
         run: |
+            ls -la
+            source .venv/bin/activate
             cd backend
             python manage.py migrate --noinput
 
       - name: Test
         run: |
+            source .venv/bin/activate
             poetry run pytest
 
       - name: Lint
