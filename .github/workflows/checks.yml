@@ -2,6 +2,9 @@ name: Checks
 
 on: [push]
 
+env:
+  POETRY_VERSION: 1.5.1
+
 jobs:
   test-lint:
     name: Test and Lint
@@ -14,7 +17,19 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.4
+      - name: Install Poetry
+        uses: snok/install-poetry@v2
+        with:
+          version: $POETRY_VERSION
+          virtualenvs-in-project: true
+      - name: Install dependencies
+        run: |
+          python -m poetry install
       - name: Test
-        run: pytest
+        run: poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
