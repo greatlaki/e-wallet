@@ -35,13 +35,11 @@ jobs:
           pg_isready
       - name: PG setup
         run: |
-          sudo -u postgres createuser --superuser testuser
+          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
       - name: Test
         run: |
             export POSTGRES_DB='postgres'
             export POSTGRES_HOST='localhost'
-            export POSTGRES_USER='testuser'
-            export POSTGRES_PASSWORD='testpassword'
             poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
