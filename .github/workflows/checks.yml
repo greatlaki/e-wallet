@@ -6,6 +6,18 @@ jobs:
   test-lint:
     name: Test and Lint
     runs-on: ubuntu-20.04
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     env:
       POETRY_VERSION: 1.5.1
     steps:
@@ -29,17 +41,8 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
-      - name: Start Postgres
-        run: |
-          sudo systemctl start postgresql.service
-          pg_isready
-      - name: PG setup
-        run: |
-          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
       - name: Test
         run: |
-            export POSTGRES_DB='postgres'
-            export POSTGRES_HOST='localhost'
             poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
