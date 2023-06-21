@@ -28,24 +28,31 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up python
         id: setup-python
         uses: actions/setup-python@v2
         with:
           python-version: 3.11.4
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{env.POETRY_VERSION}}
           virtualenvs-in-project: true
+
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
-      - name: Test
-        env:
-          DATABASE_URL: 'postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres'
+      - name: Run DB migrations
         run: |
+            source .venv/bin/activate
+            python manage.py migrate
+
+      - name: Test
+        run: |
+            source .venv/bin/activate
             poetry run pytest
 
       - name: Lint
