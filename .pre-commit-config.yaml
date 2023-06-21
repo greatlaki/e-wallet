@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        args: [ --in-place, --remove-all-unused-imports ]
+
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        language_version: python3.11.4
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        additional_dependencies: [flake8-bugbear]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [ --profile, black ]
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: Type checking with mypy
+        language: system
+        types: [ python ]
+        entry: mypy --install-types --non-interactive --ignore-missing-imports
+        verbose: true
