@@ -6,9 +6,6 @@ jobs:
   test-lint:
     name: Test and Lint
     runs-on: ubuntu-20.04
-    services:
-      postgresql:
-        image: postgres:13-alpine
     env:
       POETRY_VERSION: 1.5.1
     steps:
@@ -33,6 +30,8 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
       - name: Test
-        run: poetry run pytest
+        run: |
+          sudo systemctl start postgresql.service
+          poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
