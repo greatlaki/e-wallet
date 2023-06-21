@@ -63,7 +63,7 @@ jobs:
 
       - name: Test
         env:
-          DATABASE_URL: 'postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test_db'
+          DATABASE_URL: 'postgres://postgres:postgres@postgres:${{ job.services.postgres.ports[5432] }}/test_db'
         run: |
             poetry run pytest
 
