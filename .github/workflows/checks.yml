@@ -35,7 +35,7 @@ jobs:
           pg_isready
       - name: PG setup
         run: |
-            sudo -u postgres psql -c "create role testuser with login password 'testpassword';" postgres
+          sudo -u postgres createuser --superuser testuser
       - name: Test
         run: |
             export POSTGRES_DB='postgres'
