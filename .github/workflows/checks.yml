@@ -29,10 +29,19 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
-      - name: Test
+      - name: Start Postgres
         run: |
           sudo systemctl start postgresql.service
-          sudo -u postgres createuser --createdb ${{ secrets.DOCKERHUB_USER }}
-          poetry run pytest
+          pg_isready
+      - name: PG setup
+        run: |
+            sudo -u postgres psql -c "create role testuser with login password 'testpassword';" postgres
+      - name: Test
+        run: |
+            export POSTGRES_DB='postgres'
+            export POSTGRES_HOST='localhost'
+            export POSTGRES_USER='testuser'
+            export POSTGRES_PASSWORD='testpassword'
+            poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
