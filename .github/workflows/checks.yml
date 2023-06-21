@@ -32,6 +32,7 @@ jobs:
       - name: Test
         run: |
           sudo systemctl start postgresql.service
+          sudo -u postgres createuser --createdb ${{ secrets.DOCKERHUB_USER }}
           poetry run pytest
       - name: Lint
         run: flake8 --max-line-length 120  --exclude=*/migrations/*
