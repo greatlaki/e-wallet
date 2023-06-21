@@ -47,6 +47,7 @@ jobs:
 
       - name: Run DB migrations
         run: |
+            ls
             source .venv/bin/activate
             python manage.py migrate
 
