@@ -6,6 +6,9 @@ jobs:
   test-lint:
     name: Test and Lint
     runs-on: ubuntu-20.04
+    services:
+      postgresql:
+        image: postgres:13-alpine
     env:
       POETRY_VERSION: 1.5.1
     steps:
