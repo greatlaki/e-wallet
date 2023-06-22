@@ -4,7 +4,7 @@ from rest_framework import serializers
 from wallets.models import Wallet
 
 
-class WalletsListCreateSerializer(serializers.ModelSerializer):
+class WalletsSerializer(serializers.ModelSerializer):
     owner = ReadableHiddenField(default=serializers.CurrentUserDefault())
     wallet_number = serializers.CharField()
     amount = serializers.DecimalField(
@@ -22,9 +22,9 @@ class WalletsListCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate_wallet_number(self, wallet_number):
-        wallet_number = Wallet.objects.filter(
+        wallet_number_exists = Wallet.objects.filter(
             wallet_number__iexact=wallet_number
         ).exists()
-        if wallet_number:
+        if wallet_number_exists:
             raise serializers.ValidationError("The wallet number already exists")
         return wallet_number
