@@ -1,5 +1,5 @@
 import factory
-from wallets.models import Wallet
+from wallets.models import Transaction, Wallet
 
 from tests.users.factories import UserFactory
 
@@ -14,3 +14,11 @@ class WalletFactory(factory.django.DjangoModelFactory):
     )
     wallet_number = factory.Faker("random_number")
     balance = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
+
+
+class TransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Transaction
+
+    wallet = factory.SubFactory(WalletFactory)
+    amount = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)

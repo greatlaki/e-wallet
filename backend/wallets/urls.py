@@ -1,5 +1,6 @@
 from django.urls import path
 from wallets.views import (
+    TransactionListCreateAPIView,
     WalletsBalanceAPIView,
     WalletsListCreateAPIView,
     WalletsRetrieveUpdateDestroyAPIView,
@@ -16,5 +17,10 @@ urlpatterns = [
         "<int:pk>/balance/",
         WalletsBalanceAPIView.as_view(),
         name="retrieve-wallet-balance",
+    ),
+    path(
+        "transaction/",
+        TransactionListCreateAPIView.as_view(),
+        name="list-create-transaction",
     ),
 ]

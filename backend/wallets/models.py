@@ -40,4 +40,4 @@ class Transaction(BaseModel):
     amount = models.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
-    type = models.CharField(choices=TransactionType.choices)
+    transaction_type = models.CharField(choices=TransactionType.choices)
