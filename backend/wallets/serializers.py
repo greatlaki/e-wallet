@@ -28,3 +28,12 @@ class WalletsSerializer(serializers.ModelSerializer):
         if wallet_number_exists:
             raise serializers.ValidationError("The wallet number already exists")
         return wallet_number
+
+
+class WalletBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = (
+            "id",
+            "amount",
+        )
