@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models
 from django.db.models import CheckConstraint
+from django_extended.constants import TransactionType
 from django_extended.models import BaseModel
 from rest_framework.exceptions import ValidationError
 from users.models import User
@@ -28,3 +29,15 @@ class Wallet(BaseModel):
         constraints = (
             CheckConstraint(check=models.Q(balance__gte=0.0), name="positive_balance"),
         )
+
+
+class Transaction(BaseModel):
+    wallet = models.ForeignKey(
+        "Wallet",
+        on_delete=models.CASCADE,
+        related_name="transactions",
+    )
+    amount = models.DecimalField(
+        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
+    )
+    type = models.CharField(choices=TransactionType.choices)
