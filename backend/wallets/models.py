@@ -10,7 +10,7 @@ class Wallet(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wallets")
     name = models.CharField(max_length=255)
     wallet_number = models.CharField(max_length=255, unique=True)
-    amount = models.DecimalField(
+    balance = models.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
 
@@ -18,13 +18,13 @@ class Wallet(BaseModel):
         try:
             return super().save(*args, **kwargs)
         except IntegrityError as exc:
-            if "positive_amount" in str(exc.args):
-                error_message = {"amount": ["The amount should be positive"]}
+            if "positive_balance" in str(exc.args):
+                error_message = {"balance": ["The balance should be positive"]}
             else:
                 raise exc
             raise ValidationError(error_message)
 
     class Meta:
         constraints = (
-            CheckConstraint(check=models.Q(amount__gte=0.0), name="positive_amount"),
+            CheckConstraint(check=models.Q(balance__gte=0.0), name="positive_balance"),
         )
