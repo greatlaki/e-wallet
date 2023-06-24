@@ -1,4 +1,5 @@
 from django.core.validators import MinValueValidator
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django_extended.constants import TransactionType
 from django_extended.serializers import ReadableHiddenField
@@ -55,6 +56,21 @@ class TransactionSerializer(serializers.ModelSerializer):
             "transaction_type",
         )
 
+    @staticmethod
+    def validate_wallet_transaction(transaction_type: str, owner: QuerySet):
+        if transaction_type == TransactionType.WITHDRAW and not owner:
+            raise serializers.ValidationError(
+                {"wallet": "The user must be the owner of the wallet."}
+            )
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        owner = Wallet.objects.filter(owner__id=user.id)
+        transaction_type = attrs.get("transaction_type")
+        if not user.is_superuser:
+            self.validate_wallet_transaction(transaction_type, owner)
+        return attrs
+
     def create(self, validated_data):
         wallet_id = validated_data["wallet_id"]
         amount = validated_data["amount"]
@@ -67,4 +83,4 @@ class TransactionSerializer(serializers.ModelSerializer):
             case TransactionType.WITHDRAW:
                 direction.balance -= amount
                 direction.save()
-        return Transaction.objects.create(**validated_data)
+        return super().create(validated_data)
