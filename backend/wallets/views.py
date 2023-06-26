@@ -50,3 +50,14 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
         if user.is_superuser:
             return Transaction.objects.all()
         return Transaction.objects.filter(wallet__owner_id=user.pk)
+
+
+class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        user = self.request.user
+        if user.is_superuser:
+            return Transaction.objects.all()
+        return Transaction.objects.filter(wallet__owner_id=user.pk)

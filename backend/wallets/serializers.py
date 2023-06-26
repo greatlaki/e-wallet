@@ -44,8 +44,11 @@ class WalletBalanceSerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     wallet_id = serializers.IntegerField()
+    # sender_wallet_id = serializers.IntegerField()
     amount = serializers.DecimalField(max_digits=32, decimal_places=2)
-    transaction_type = serializers.ChoiceField(choices=TransactionType.choices)
+    transaction_type = serializers.ChoiceField(
+        choices=TransactionType.choices, required=True
+    )
 
     class Meta:
         model = Transaction
@@ -62,11 +65,15 @@ class TransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"wallet": "The user must be the owner of the wallet."}
             )
+        if transaction_type == TransactionType.TRANSFER and not owner:
+            pass
 
     def validate(self, attrs):
         user = self.context["request"].user
-        owner = Wallet.objects.filter(owner__id=user.id)
         transaction_type = attrs.get("transaction_type")
+        # sender_wallet_id = attrs.get("sender_wallet_id")
+        owner = Wallet.objects.filter(owner__id=user.id)
+        # sender_wallet = Wallet.objects.get(id=sender_wallet_id)
         if not user.is_superuser:
             self.validate_wallet_transaction(transaction_type, owner)
         return attrs
@@ -83,4 +90,6 @@ class TransactionSerializer(serializers.ModelSerializer):
             case TransactionType.WITHDRAW:
                 direction.balance -= amount
                 direction.save()
+            case TransactionType.TRANSFER:
+                pass
         return super().create(validated_data)
