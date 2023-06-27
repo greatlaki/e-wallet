@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from wallets.models import Transaction, Wallet
@@ -49,7 +50,9 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
         user = self.request.user
         if user.is_superuser:
             return Transaction.objects.all()
-        return Transaction.objects.filter(wallet__owner_id=user.pk)
+        return Transaction.objects.filter(
+            Q(wallet__owner_id=user.pk) | Q(receiver__id=user.pk)
+        )
 
 
 class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):

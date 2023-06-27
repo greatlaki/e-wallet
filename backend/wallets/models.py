@@ -41,6 +41,8 @@ class Transaction(BaseModel):
         "Wallet",
         on_delete=models.CASCADE,
         related_name="incoming_transactions",
+        blank=True,
+        null=True,
     )
     amount = models.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
