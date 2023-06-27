@@ -69,16 +69,16 @@ class TransactionSerializer(serializers.ModelSerializer):
             )
 
     @staticmethod
-    def validate_wallet_transaction(user: User, wallet_id: int, transaction_type: str):
+    def validate_wallet_transaction(
+        user: User, wallet_id: int, receiver_wallet_id: int, transaction_type: str
+    ):
         if (
-            transaction_type == TransactionType.WITHDRAW
-            and wallet_id not in user.get_wallets_ids()  #
+            transaction_type == (TransactionType.WITHDRAW or TransactionType.TRANSFER)
+            and wallet_id not in user.get_wallets_ids()
         ):
             raise serializers.ValidationError(
                 {"wallet": "The user must be the owner of the wallet."}
             )
-        if transaction_type == TransactionType.TRANSFER:
-            pass
 
     def validate(self, attrs):
         user = self.context["request"].user
@@ -88,7 +88,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         self.validate_wallet_existence(wallet_id)
         self.validate_wallet_existence(receiver_wallet_id)
         if not user.is_superuser:
-            self.validate_wallet_transaction(user, wallet_id, transaction_type)
+            self.validate_wallet_transaction(
+                user, wallet_id, receiver_wallet_id, transaction_type
+            )
         return attrs
 
     def create(self, validated_data):
