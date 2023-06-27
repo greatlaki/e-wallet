@@ -21,4 +21,5 @@ class TransactionFactory(factory.django.DjangoModelFactory):
         model = Transaction
 
     wallet = factory.SubFactory(WalletFactory)
+    receiver = factory.SubFactory(WalletFactory)
     amount = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)

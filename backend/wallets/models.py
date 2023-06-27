@@ -37,6 +37,11 @@ class Transaction(BaseModel):
         on_delete=models.CASCADE,
         related_name="transactions",
     )
+    receiver = models.ForeignKey(
+        "Wallet",
+        on_delete=models.CASCADE,
+        related_name="incoming_transactions",
+    )
     amount = models.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )

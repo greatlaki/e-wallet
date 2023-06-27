@@ -19,5 +19,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     class Meta:
         db_table = "users"
 
+    def get_wallets_ids(self):
+        return self.wallets.values_list("id", flat=True)
+
     def __str__(self):
         return self.email
