@@ -71,9 +71,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_wallet_transaction(user: User, wallet_id: int, transaction_type: str):
         if (
-            # transaction_type == TransactionType.WITHDRAW
-            wallet_id
-            not in user.get_wallets_ids()
+            transaction_type == TransactionType.WITHDRAW
+            and wallet_id not in user.get_wallets_ids()  #
         ):
             raise serializers.ValidationError(
                 {"wallet": "The user must be the owner of the wallet."}
