@@ -1,3 +1,9 @@
+# import pytest
+# from tests.wallets.factories import WalletFactory, TransactionFactory
+#
+# from django_extended.constants import TransactionType
+#
+#
 # @pytest.mark.django_db
 # class TestPut:
 #     def test_it_updates_transaction(self, api_client, active_user):
