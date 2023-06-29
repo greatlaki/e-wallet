@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from django.core.validators import MinValueValidator
 from django.db import transaction
-from django_extended.constants import TransactionType
+from django_extended.constants import RequestMethods, TransactionType
 from django_extended.serializers import ReadableHiddenField
 from rest_framework import serializers
 from users.models import User
@@ -63,8 +65,14 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_wallet_transaction(
-        user: User, wallet_id: int, receiver_id: int, transaction_type: str
+        user: User,
+        wallet_id: int,
+        receiver_id: int,
+        transaction_type: str,
+        request_method: str,
     ):
+        if not transaction_type:
+            return
         if (
             (
                 transaction_type == TransactionType.WITHDRAW
@@ -80,13 +88,25 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"receiver_id": "The wallet of the recipient must be entered."}
             )
+        if (
+            request_method == RequestMethods.PATCH
+            and transaction_type != TransactionType.CANCELLATION
+        ):
+            raise serializers.ValidationError(
+                {
+                    "transaction_type": "The user cannot change transaction types. The transaction can only be canceled by the administrator."
+                }
+            )
 
     def validate(self, attrs):
         user = self.context["request"].user
+        request_method = self.context["request"].method
         wallet_id = attrs.get("wallet_id")
         receiver_id = attrs.get("receiver_id")
         transaction_type = attrs.get("transaction_type")
-        self.validate_wallet_transaction(user, wallet_id, receiver_id, transaction_type)
+        self.validate_wallet_transaction(
+            user, wallet_id, receiver_id, transaction_type, request_method
+        )
         return attrs
 
 
@@ -111,9 +131,10 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
         )
 
     def create(self, validated_data):
-        wallet_id = validated_data["wallet_id"]
-        amount = validated_data["amount"]
-        transaction_type = validated_data["transaction_type"]
+        wallet_id = validated_data.get("wallet_id")
+        receiver_id = validated_data.get("receiver_id")
+        amount = validated_data.get("amount")
+        transaction_type = validated_data.get("transaction_type")
         wallet = Wallet.objects.get(id=wallet_id)
         match transaction_type:
             case TransactionType.DEPOSIT:
@@ -121,9 +142,10 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
             case TransactionType.WITHDRAW:
                 wallet.balance -= amount
             case TransactionType.TRANSFER:
-                receiver_id = validated_data["receiver_id"]
-                receiver_wallet = Wallet.objects.get(id=receiver_id)
+                if receiver_id is None:
+                    return
                 with transaction.atomic():
+                    receiver_wallet = Wallet.objects.get(id=receiver_id)
                     wallet.balance -= amount
                     receiver_wallet.balance += amount
                     receiver_wallet.save()
@@ -137,6 +159,9 @@ class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
     amount = serializers.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
+    transaction_type = serializers.ChoiceField(
+        choices=TransactionType.choices, required=False
+    )
 
     class Meta:
         model = Transaction
@@ -145,26 +170,53 @@ class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
             "wallet_id",
             "receiver_id",
             "amount",
+            "transaction_type",
         )
 
+    def validate_amount(self, amount: Decimal):
+        if amount == Decimal("0.0"):
+            raise serializers.ValidationError(
+                {
+                    "amount": "The amount should be more than '0', otherwise cancel the transaction"
+                }
+            )
+        return amount
+
     def update(self, instance, validated_data):
+        wallet_id = instance.wallet.id
+        receiver_id = None
+        if instance.receiver:
+            receiver_id = instance.receiver.id
         amount = validated_data.get("amount", instance.amount)
         transaction_type = instance.transaction_type
-
+        cancellation_type = validated_data.get("transaction_type")
+        wallet = Wallet.objects.get(id=wallet_id)
         match transaction_type:
             case TransactionType.DEPOSIT:
-                instance.wallet.balance += amount
+                wallet.balance += amount
             case TransactionType.WITHDRAW:
-                instance.wallet.balance -= amount
+                wallet.balance -= amount
             case TransactionType.TRANSFER:
-                receiver_id = instance.reciver_id
-                receiver_wallet = Wallet.objects.get(id=receiver_id)
+                if receiver_id is None:
+                    return
                 with transaction.atomic():
-                    instance.wallet.balance -= amount
+                    receiver_wallet = Wallet.objects.get(id=receiver_id)
+                    wallet.balance -= amount
                     receiver_wallet.balance += amount
                     receiver_wallet.save()
-
-        instance.wallet.save()
+        if cancellation_type:
+            match transaction_type:
+                case TransactionType.DEPOSIT:
+                    wallet.balance -= amount
+                case TransactionType.WITHDRAW:
+                    wallet.balance += amount
+                case TransactionType.TRANSFER:
+                    receiver_wallet = Wallet.objects.get(id=receiver_id)
+                    wallet.balance += amount
+                    receiver_wallet.balance -= amount
+                    receiver_wallet.save()
+            instance.transaction_type = cancellation_type
+        wallet.save()
         instance.amount = amount
         instance.save()
         return super().update(instance, validated_data)

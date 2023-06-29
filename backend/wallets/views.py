@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django_extended.constants import RequestMethods
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from wallets.models import Transaction, Wallet
@@ -66,6 +67,6 @@ class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIV
         return Transaction.objects.filter(wallet__owner_id=user.pk)
 
     def get_permissions(self):
-        if self.request.method in ["PATCH", "DELETE"]:
+        if self.request.method in [RequestMethods.PATCH, RequestMethods.DELETE]:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
