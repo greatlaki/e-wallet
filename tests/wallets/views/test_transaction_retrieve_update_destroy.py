@@ -24,9 +24,9 @@
 #             f"/api/wallets/transactions/{transaction.pk}/", data=data, format="json"
 #         )
 #
-#         # assert response.status_code == 200
-#         # wallet.refresh_from_db()
-#         # assert wallet.balance == Decimal("130.0")
+#         assert response.status_code == 200
+#         wallet.refresh_from_db()
+#         assert wallet.balance == Decimal("130.0")
 #
 #     def test_it_(self, api_client, active_user):
 #         # todo: Transaction cancellation, only for admin

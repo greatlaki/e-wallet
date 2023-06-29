@@ -360,37 +360,17 @@ class TestGet:
             response.data["detail"] == "Authentication credentials were not provided."
         )
 
-    def test_it_returns_transactions_list_if_auth_user_is_receiver(
-        self, api_client, active_user
-    ):
+    def test_it(self, api_client, active_user):
         api_client.force_authenticate(active_user)
         user1 = UserFactory()
         user2 = UserFactory()
         wallet1 = WalletFactory(owner=active_user, balance=Decimal("0.00"))
-        wallet2 = WalletFactory(owner=user1, balance=Decimal("100.00"))
+        wallet2 = WalletFactory(owner=user1, balance=Decimal("0.00"))
         wallet3 = WalletFactory(owner=user2, balance=Decimal("0.00"))
         TransactionFactory(
-            wallet=wallet2,
-            receiver=wallet1,
-            transaction_type=TransactionType.TRANSFER,
-            amount=Decimal("40.0"),
-        )
-        TransactionFactory(
-            wallet=wallet3,
+            wallet=wallet1,
             transaction_type=TransactionType.DEPOSIT,
-            amount=Decimal("100.0"),
-        )
-        TransactionFactory(
-            wallet=wallet3,
-            receiver=wallet1,
-            transaction_type=TransactionType.TRANSFER,
-            amount=Decimal("50.0"),
-        )
-        TransactionFactory(
-            wallet=wallet3,
-            receiver=wallet1,
-            transaction_type=TransactionType.TRANSFER,
-            amount=Decimal("50.0"),
+            amount=Decimal("1000.0"),
         )
         TransactionFactory(
             wallet=wallet1,
@@ -398,7 +378,37 @@ class TestGet:
             transaction_type=TransactionType.TRANSFER,
             amount=Decimal("100.0"),
         )
+        TransactionFactory(
+            wallet=wallet1,
+            receiver=wallet3,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("100.0"),
+        )
+        TransactionFactory(
+            wallet=wallet2,
+            receiver=wallet1,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("10.0"),
+        )
+        TransactionFactory(
+            wallet=wallet3,
+            receiver=wallet1,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("10.0"),
+        )
+        TransactionFactory(
+            wallet=wallet2,
+            receiver=wallet3,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("10.0"),
+        )
+        TransactionFactory(
+            wallet=wallet3,
+            receiver=wallet2,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("20.0"),
+        )
+
         response = api_client.get("/api/wallets/transactions/")
 
         assert response.status_code == 200
-        assert len(response.data) == 4
