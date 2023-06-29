@@ -48,3 +48,13 @@ class Transaction(BaseModel):
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
     transaction_type = models.CharField(choices=TransactionType.choices)
+
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean(validate_constraints=False)
+        return super().save(force_insert, force_update, using, update_fields)
