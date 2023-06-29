@@ -22,5 +22,4 @@ def transaction_delete(instance, **kwargs):
             wallet.balance += amount
             receiver_wallet.balance -= amount
             receiver_wallet.save()
-            receiver_wallet.save()
     wallet.save()

@@ -276,6 +276,29 @@ class TestPost:
         assert wallet1.balance == Decimal("50")
         assert wallet2.balance == Decimal("60")
 
+    def test_it_returns_error_if_transaction_is_transfer_and_recipient_was_specified(
+        self, api_client, active_user
+    ):
+        api_client.force_authenticate(active_user)
+        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet2 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        TransactionFactory.build()
+        data = {
+            "wallet_id": wallet1.pk,
+            "receiver_id": wallet2.pk,
+            "amount": Decimal("5.00"),
+            "transaction_type": TransactionType.DEPOSIT,
+        }
+
+        response = api_client.post(
+            "/api/wallets/transactions/", data=data, format="json"
+        )
+
+        assert response.status_code == 400
+        assert response.data["receiver_id"] == [
+            "The recipient can only be specified if the transaction type is transfer"
+        ]
+
 
 @pytest.mark.django_db
 class TestGet:
@@ -360,7 +383,9 @@ class TestGet:
             response.data["detail"] == "Authentication credentials were not provided."
         )
 
-    def test_it(self, api_client, active_user):
+    def test_it_returns_transaction_if_user_is_sender_and_recipient(
+        self, api_client, active_user
+    ):
         api_client.force_authenticate(active_user)
         user1 = UserFactory()
         user2 = UserFactory()

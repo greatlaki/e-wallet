@@ -88,6 +88,12 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"receiver_id": "The wallet of the recipient must be entered."}
             )
+        if receiver_id and transaction_type != TransactionType.TRANSFER:
+            raise serializers.ValidationError(
+                {
+                    "receiver_id": "The recipient can only be specified if the transaction type is transfer"
+                }
+            )
         if (
             request_method == RequestMethods.PATCH
             and transaction_type != TransactionType.CANCELLATION
