@@ -42,26 +42,7 @@ class WalletBalanceSerializer(serializers.ModelSerializer):
         )
 
 
-class TransactionSerializer(serializers.ModelSerializer):
-    wallet_id = serializers.IntegerField()
-    receiver_id = serializers.IntegerField(required=False)
-    amount = serializers.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
-    )
-    transaction_type = serializers.ChoiceField(
-        choices=TransactionType.choices, required=True
-    )
-
-    class Meta:
-        model = Transaction
-        fields = (
-            "id",
-            "wallet_id",
-            "receiver_id",
-            "amount",
-            "transaction_type",
-        )
-
+class TransactionBaseSerializer(serializers.ModelSerializer):
     def validate_wallet_id(self, wallet_id: int):
         wallet_exists = Wallet.objects.filter(id=wallet_id).exists()
         if not wallet_exists:
@@ -108,6 +89,27 @@ class TransactionSerializer(serializers.ModelSerializer):
         self.validate_wallet_transaction(user, wallet_id, receiver_id, transaction_type)
         return attrs
 
+
+class TransactionListCreateSerializer(TransactionBaseSerializer):
+    wallet_id = serializers.IntegerField()
+    receiver_id = serializers.IntegerField(required=False)
+    amount = serializers.DecimalField(
+        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
+    )
+    transaction_type = serializers.ChoiceField(
+        choices=TransactionType.choices, required=True
+    )
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "id",
+            "wallet_id",
+            "receiver_id",
+            "amount",
+            "transaction_type",
+        )
+
     def create(self, validated_data):
         wallet_id = validated_data["wallet_id"]
         amount = validated_data["amount"]
@@ -116,16 +118,53 @@ class TransactionSerializer(serializers.ModelSerializer):
         match transaction_type:
             case TransactionType.DEPOSIT:
                 wallet.balance += amount
-                wallet.save()
             case TransactionType.WITHDRAW:
                 wallet.balance -= amount
-                wallet.save()
             case TransactionType.TRANSFER:
                 receiver_id = validated_data["receiver_id"]
                 receiver_wallet = Wallet.objects.get(id=receiver_id)
                 with transaction.atomic():
                     wallet.balance -= amount
-                    wallet.save()
                     receiver_wallet.balance += amount
                     receiver_wallet.save()
+        wallet.save()
         return super().create(validated_data)
+
+
+class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
+    wallet_id = serializers.IntegerField()
+    receiver_id = serializers.IntegerField(required=False)
+    amount = serializers.DecimalField(
+        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
+    )
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "id",
+            "wallet_id",
+            "receiver_id",
+            "amount",
+        )
+
+    def update(self, instance, validated_data):
+        amount = validated_data.get("amount", instance.amount)
+        transaction_type = instance.transaction_type
+
+        match transaction_type:
+            case TransactionType.DEPOSIT:
+                instance.wallet.balance += amount
+            case TransactionType.WITHDRAW:
+                instance.wallet.balance -= amount
+            case TransactionType.TRANSFER:
+                receiver_id = instance.reciver_id
+                receiver_wallet = Wallet.objects.get(id=receiver_id)
+                with transaction.atomic():
+                    instance.wallet.balance -= amount
+                    receiver_wallet.balance += amount
+                    receiver_wallet.save()
+
+        instance.wallet.save()
+        instance.amount = amount
+        instance.save()
+        return super().update(instance, validated_data)

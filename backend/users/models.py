@@ -10,7 +10,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     last_name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
 
