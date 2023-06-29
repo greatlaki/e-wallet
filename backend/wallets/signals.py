@@ -9,9 +9,7 @@ def transaction_delete(instance, **kwargs):
     wallet = instance.wallet
     amount = instance.amount
     transaction_type = instance.transaction_type
-    receiver_id = None
-    if instance.receiver:
-        receiver_id = instance.receiver.id
+    receiver_id = instance.receiver.id
     match transaction_type:
         case TransactionType.DEPOSIT:
             wallet.balance -= amount
