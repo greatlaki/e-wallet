@@ -7,7 +7,7 @@ from wallets.models import Wallet
 class WalletsSerializer(serializers.ModelSerializer):
     owner = ReadableHiddenField(default=serializers.CurrentUserDefault())
     wallet_number = serializers.CharField()
-    amount = serializers.DecimalField(
+    balance = serializers.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
 
@@ -18,7 +18,7 @@ class WalletsSerializer(serializers.ModelSerializer):
             "owner",
             "name",
             "wallet_number",
-            "amount",
+            "balance",
         )
 
     def validate_wallet_number(self, wallet_number):
@@ -35,5 +35,5 @@ class WalletBalanceSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = (
             "id",
-            "amount",
+            "balance",
         )

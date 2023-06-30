@@ -10,7 +10,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     last_name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
 
@@ -18,6 +18,9 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     class Meta:
         db_table = "users"
+
+    def get_wallets_ids(self):
+        return self.wallets.values_list("id", flat=True)
 
     def __str__(self):
         return self.email

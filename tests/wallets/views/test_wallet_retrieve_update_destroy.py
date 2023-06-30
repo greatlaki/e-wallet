@@ -13,7 +13,7 @@ class TestGet:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
 
         response = api_client.get(f"/api/wallets/{wallet.pk}/")
@@ -25,7 +25,7 @@ class TestGet:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
 
         response = api_client.get(f"/api/wallets/{wallet.pk}/")
@@ -43,7 +43,7 @@ class TestGet:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
 
         response = api_client.get(f"/api/wallets/{wallet.pk}/")
@@ -59,12 +59,12 @@ class TestPut:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
         data = {
             "name": "new_name",
             "wallet_number": "new_wallet_number",
-            "amount": Decimal("123.00"),
+            "balance": Decimal("123.00"),
         }
 
         response = api_client.put(
@@ -75,7 +75,7 @@ class TestPut:
         assert response.status_code == 200
         assert data["name"] == wallet.name
         assert data["wallet_number"] == wallet.wallet_number
-        assert data["amount"] == wallet.amount
+        assert data["balance"] == wallet.balance
 
     def test_it_returns_error_if_wallet_number_already_exists(
         self, api_client, active_user
@@ -85,15 +85,15 @@ class TestPut:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
         WalletFactory(
-            owner=active_user, name="name", wallet_number="r2d2", amount=Decimal("0.0")
+            owner=active_user, name="name", wallet_number="r2d2", balance=Decimal("0.0")
         )
         data = {
             "name": "new_name",
             "wallet_number": "r2d2",
-            "amount": Decimal("144.00"),
+            "balance": Decimal("144.00"),
         }
 
         response = api_client.put(
@@ -112,15 +112,15 @@ class TestPut:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
         WalletFactory(
-            owner=active_user, name="name", wallet_number="r2d2", amount=Decimal("0.0")
+            owner=active_user, name="name", wallet_number="r2d2", balance=Decimal("0.0")
         )
         data = {
             "name": "new_name",
             "wallet_number": "R2D2",
-            "amount": Decimal("144.00"),
+            "balance": Decimal("144.00"),
         }
 
         response = api_client.put(
@@ -139,10 +139,10 @@ class TestPut:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
         data = {
-            "amount": Decimal("144.00"),
+            "balance": Decimal("144.00"),
         }
 
         response = api_client.put(
@@ -163,11 +163,11 @@ class TestPatch:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
         data = {
             "name": "new_name",
-            "amount": Decimal("144.00"),
+            "balance": Decimal("144.00"),
         }
 
         response = api_client.patch(
@@ -177,7 +177,7 @@ class TestPatch:
         wallet.refresh_from_db()
         assert response.status_code == 200
         assert data["name"] == wallet.name
-        assert data["amount"] == wallet.amount
+        assert data["balance"] == wallet.balance
 
 
 @pytest.mark.django_db
@@ -188,7 +188,7 @@ class TestDelete:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
 
         response = api_client.delete(f"/api/wallets/{wallet.pk}/")
@@ -201,7 +201,7 @@ class TestDelete:
             owner=active_user,
             name="name",
             wallet_number="wallet_number",
-            amount=Decimal("0.0"),
+            balance=Decimal("0.0"),
         )
 
         response = api_client.delete(f"/api/wallets/{wallet.pk}/")

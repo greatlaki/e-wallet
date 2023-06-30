@@ -1,8 +1,10 @@
+from decimal import Decimal
+
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import IntegrityError, models
-from django.db.models import CheckConstraint
+from django.db import models
+from django_extended.constants import MINIMUM_TRANSFER_RATE, TransactionType
 from django_extended.models import BaseModel
-from rest_framework.exceptions import ValidationError
 from users.models import User
 
 
@@ -10,21 +12,43 @@ class Wallet(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wallets")
     name = models.CharField(max_length=255)
     wallet_number = models.CharField(max_length=255, unique=True)
-    amount = models.DecimalField(
+    balance = models.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
 
-    def save(self, *args, **kwargs):
-        try:
-            return super().save(*args, **kwargs)
-        except IntegrityError as exc:
-            if "positive_amount" in str(exc.args):
-                error_message = {"amount": ["The amount should be positive"]}
-            else:
-                raise exc
-            raise ValidationError(error_message)
+    def clean(self):
+        if self.balance < Decimal("0.0"):
+            raise ValidationError({"balance": "The balance should be positive"})
+        return super().clean()
 
-    class Meta:
-        constraints = (
-            CheckConstraint(check=models.Q(amount__gte=0.0), name="positive_amount"),
-        )
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+
+class Transaction(BaseModel):
+    wallet = models.ForeignKey(
+        "Wallet",
+        on_delete=models.CASCADE,
+        related_name="transactions",
+    )
+    receiver = models.ForeignKey(
+        "Wallet",
+        on_delete=models.CASCADE,
+        related_name="incoming_transactions",
+        blank=True,
+        null=True,
+    )
+    amount = models.DecimalField(max_digits=32, decimal_places=2)
+    transaction_type = models.CharField(choices=TransactionType.choices)
+
+    def clean(self):
+        if self.amount < MINIMUM_TRANSFER_RATE:
+            raise ValidationError(
+                {"amount": "Insufficient transfer amount, the minimum amount is 0.1"}
+            )
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)

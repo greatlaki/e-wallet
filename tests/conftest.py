@@ -16,4 +16,4 @@ def active_user():
 
 @pytest.fixture
 def admin_user():
-    return UserFactory(is_superuser=True)
+    return UserFactory(is_staff=True, is_superuser=True)
