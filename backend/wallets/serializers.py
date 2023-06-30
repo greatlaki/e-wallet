@@ -1,12 +1,12 @@
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
-from django.db import transaction
 from django_extended.constants import RequestMethods, TransactionType
 from django_extended.serializers import ReadableHiddenField
 from rest_framework import serializers
 from users.models import User
 from wallets.models import Transaction, Wallet
+from wallets.services import cancel_wallet_transactions, wallet_transactions
 
 
 class WalletsSerializer(serializers.ModelSerializer):
@@ -141,21 +141,7 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
         receiver_id = validated_data.get("receiver_id")
         amount = validated_data.get("amount")
         transaction_type = validated_data.get("transaction_type")
-        wallet = Wallet.objects.get(id=wallet_id)
-        match transaction_type:
-            case TransactionType.DEPOSIT:
-                wallet.balance += amount
-            case TransactionType.WITHDRAW:
-                wallet.balance -= amount
-            case TransactionType.TRANSFER:
-                if receiver_id is None:
-                    return
-                with transaction.atomic():
-                    receiver_wallet = Wallet.objects.get(id=receiver_id)
-                    wallet.balance -= amount
-                    receiver_wallet.balance += amount
-                    receiver_wallet.save()
-        wallet.save()
+        wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
         return super().create(validated_data)
 
 
@@ -196,33 +182,10 @@ class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
         amount = validated_data.get("amount", instance.amount)
         transaction_type = instance.transaction_type
         cancellation_type = validated_data.get("transaction_type")
-        wallet = Wallet.objects.get(id=wallet_id)
-        match transaction_type:
-            case TransactionType.DEPOSIT:
-                wallet.balance += amount
-            case TransactionType.WITHDRAW:
-                wallet.balance -= amount
-            case TransactionType.TRANSFER:
-                if receiver_id is None:
-                    return
-                with transaction.atomic():
-                    receiver_wallet = Wallet.objects.get(id=receiver_id)
-                    wallet.balance -= amount
-                    receiver_wallet.balance += amount
-                    receiver_wallet.save()
+        wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
         if cancellation_type:
-            match transaction_type:
-                case TransactionType.DEPOSIT:
-                    wallet.balance -= amount
-                case TransactionType.WITHDRAW:
-                    wallet.balance += amount
-                case TransactionType.TRANSFER:
-                    receiver_wallet = Wallet.objects.get(id=receiver_id)
-                    wallet.balance += amount
-                    receiver_wallet.balance -= amount
-                    receiver_wallet.save()
+            cancel_wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
             instance.transaction_type = cancellation_type
-        wallet.save()
         instance.amount = amount
         instance.save()
         return super().update(instance, validated_data)
