@@ -1,9 +1,10 @@
+from decimal import Decimal
+
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import IntegrityError, models
-from django.db.models import CheckConstraint
-from django_extended.constants import TransactionType
+from django.db import models
+from django_extended.constants import MINIMUM_TRANSFER_RATE, TransactionType
 from django_extended.models import BaseModel
-from rest_framework.exceptions import ValidationError
 from users.models import User
 
 
@@ -15,20 +16,14 @@ class Wallet(BaseModel):
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
 
-    def save(self, *args, **kwargs):
-        try:
-            return super().save(*args, **kwargs)
-        except IntegrityError as exc:
-            if "positive_balance" in str(exc.args):
-                error_message = {"balance": ["The balance should be positive"]}
-            else:
-                raise exc
-            raise ValidationError(error_message)
+    def clean(self):
+        if self.balance < Decimal("0.0"):
+            raise ValidationError({"balance": "The balance should be positive"})
+        return super().clean()
 
-    class Meta:
-        constraints = (
-            CheckConstraint(check=models.Q(balance__gte=0.0), name="positive_balance"),
-        )
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 
 class Transaction(BaseModel):
@@ -44,17 +39,16 @@ class Transaction(BaseModel):
         blank=True,
         null=True,
     )
-    amount = models.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
-    )
+    amount = models.DecimalField(max_digits=32, decimal_places=2)
     transaction_type = models.CharField(choices=TransactionType.choices)
 
-    def save(
-        self,
-        force_insert: bool = False,
-        force_update: bool = False,
-        using=None,
-        update_fields=None,
-    ):
-        self.full_clean(validate_constraints=False)
-        return super().save(force_insert, force_update, using, update_fields)
+    def clean(self):
+        if self.amount < MINIMUM_TRANSFER_RATE:
+            raise ValidationError(
+                {"amount": "Insufficient transfer amount, the minimum amount is 0.1"}
+            )
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)

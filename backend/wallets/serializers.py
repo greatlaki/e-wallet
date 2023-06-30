@@ -1,7 +1,11 @@
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
-from django_extended.constants import RequestMethods, TransactionType
+from django_extended.constants import (
+    MINIMUM_TRANSFER_RATE,
+    RequestMethods,
+    TransactionType,
+)
 from django_extended.serializers import ReadableHiddenField
 from rest_framework import serializers
 from users.models import User
@@ -45,6 +49,13 @@ class WalletBalanceSerializer(serializers.ModelSerializer):
 
 
 class TransactionBaseSerializer(serializers.ModelSerializer):
+    def validate_amount(self, amount: Decimal):
+        if amount < MINIMUM_TRANSFER_RATE:
+            raise serializers.ValidationError(
+                {"amount": "Insufficient transfer amount, the minimum amount is 0.1"}
+            )
+        return amount
+
     def validate_wallet_id(self, wallet_id: int):
         wallet_exists = Wallet.objects.filter(id=wallet_id).exists()
         if not wallet_exists:
@@ -62,6 +73,28 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
                 {"receiver_id": "The wallet does not exist."}
             )
         return receiver_id
+
+    def validation_wallet_balance(
+        self,
+        wallet_id: int,
+        amount: Decimal,
+        transaction_type: str,
+        request_method: str,
+    ):
+        if amount is None:
+            return
+        if request_method == RequestMethods.PATCH and wallet_id is None:
+            return
+        wallet = Wallet.objects.get(id=wallet_id)
+        if (
+            transaction_type == TransactionType.TRANSFER
+            or transaction_type == TransactionType.WITHDRAW
+        ) and amount > wallet.balance:
+            raise serializers.ValidationError(
+                {
+                    "amount": "There are not enough funds on the balance, enter a smaller amount"
+                }
+            )
 
     @staticmethod
     def validate_wallet_transaction(
@@ -109,7 +142,11 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
         request_method = self.context["request"].method
         wallet_id = attrs.get("wallet_id")
         receiver_id = attrs.get("receiver_id")
+        amount = attrs.get("amount")
         transaction_type = attrs.get("transaction_type")
+        self.validation_wallet_balance(
+            wallet_id, amount, transaction_type, request_method
+        )
         self.validate_wallet_transaction(
             user, wallet_id, receiver_id, transaction_type, request_method
         )
@@ -120,7 +157,8 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
     wallet_id = serializers.IntegerField()
     receiver_id = serializers.IntegerField(required=False)
     amount = serializers.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
+        max_digits=32,
+        decimal_places=2,
     )
     transaction_type = serializers.ChoiceField(
         choices=TransactionType.choices, required=True
@@ -148,9 +186,7 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
 class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
     wallet_id = serializers.IntegerField()
     receiver_id = serializers.IntegerField(required=False)
-    amount = serializers.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
-    )
+    amount = serializers.DecimalField(max_digits=32, decimal_places=2)
     transaction_type = serializers.ChoiceField(
         choices=TransactionType.choices, required=False
     )
@@ -164,15 +200,6 @@ class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
             "amount",
             "transaction_type",
         )
-
-    def validate_amount(self, amount: Decimal):
-        if amount == Decimal("0.0"):
-            raise serializers.ValidationError(
-                {
-                    "amount": "The amount should be more than '0', otherwise cancel the transaction"
-                }
-            )
-        return amount
 
     def update(self, instance, validated_data):
         wallet_id = instance.wallet.id

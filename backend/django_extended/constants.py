@@ -1,4 +1,8 @@
+from decimal import Decimal
+
 from django.db import models
+
+MINIMUM_TRANSFER_RATE = Decimal("0.1")
 
 
 class TransactionType(models.TextChoices):

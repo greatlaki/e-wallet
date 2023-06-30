@@ -100,7 +100,9 @@ class TestPost:
         )
 
         assert response.status_code == 400
-        assert response.data["balance"] == ["The balance should be positive"]
+        assert response.data["amount"] == [
+            "There are not enough funds on the balance, enter a smaller amount"
+        ]
 
     def test_it_returns_error_if_user_is_not_active(self, api_client, active_user):
         wallet = WalletFactory(owner=active_user)
@@ -118,6 +120,28 @@ class TestPost:
         assert response.status_code == 401
         assert (
             response.data["detail"] == "Authentication credentials were not provided."
+        )
+
+    def test_it_returns_error_if_amount_is_less_than_minimum_transfer_rate(
+        self, api_client, active_user
+    ):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user)
+        TransactionFactory.build()
+        data = {
+            "wallet_id": wallet.pk,
+            "amount": Decimal("0.0"),
+            "transaction_type": TransactionType.WITHDRAW,
+        }
+
+        response = api_client.post(
+            "/api/wallets/transactions/", data=data, format="json"
+        )
+
+        assert response.status_code == 400
+        assert (
+            response.data["amount"]["amount"]
+            == "Insufficient transfer amount, the minimum amount is 0.1"
         )
 
     def test_it_does_not_withdraw_if_user_is_not_owner(self, api_client, active_user):
@@ -183,7 +207,9 @@ class TestPost:
         )
 
         assert response.status_code == 400
-        assert response.data["balance"] == ["The balance should be positive"]
+        assert response.data["amount"] == [
+            "There are not enough funds on the balance, enter a smaller amount"
+        ]
 
     def test_it_returns_error_if_wallets_do_not_exist(self, api_client, active_user):
         api_client.force_authenticate(active_user)

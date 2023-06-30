@@ -258,7 +258,7 @@ class TestPatch:
         assert response.status_code == 400
         assert (
             response.data["amount"]["amount"]
-            == "The amount should be more than '0', otherwise cancel the transaction"
+            == "Insufficient transfer amount, the minimum amount is 0.1"
         )
 
 
