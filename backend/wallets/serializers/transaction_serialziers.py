@@ -1,51 +1,14 @@
 from decimal import Decimal
 
-from django.core.validators import MinValueValidator
 from django_extended.constants import (
     MINIMUM_TRANSFER_RATE,
     RequestMethods,
     TransactionType,
 )
-from django_extended.serializers import ReadableHiddenField
 from rest_framework import serializers
 from users.models import User
 from wallets.models import Transaction, Wallet
 from wallets.services import cancel_wallet_transactions, wallet_transactions
-
-
-class WalletsSerializer(serializers.ModelSerializer):
-    owner = ReadableHiddenField(default=serializers.CurrentUserDefault())
-    wallet_number = serializers.CharField()
-    balance = serializers.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
-    )
-
-    class Meta:
-        model = Wallet
-        fields = (
-            "id",
-            "owner",
-            "name",
-            "wallet_number",
-            "balance",
-        )
-
-    def validate_wallet_number(self, wallet_number):
-        wallet_number_exists = Wallet.objects.filter(
-            wallet_number__iexact=wallet_number
-        ).exists()
-        if wallet_number_exists:
-            raise serializers.ValidationError("The wallet number already exists")
-        return wallet_number
-
-
-class WalletBalanceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Wallet
-        fields = (
-            "id",
-            "balance",
-        )
 
 
 class TransactionBaseSerializer(serializers.ModelSerializer):

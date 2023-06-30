@@ -3,9 +3,11 @@ from django_extended.constants import RequestMethods
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from wallets.models import Transaction, Wallet
-from wallets.serializers import (
+from wallets.serializers.transaction_serialziers import (
     TransactionListCreateSerializer,
     TransactionRetrieveUpdateDestroySerializer,
+)
+from wallets.serializers.wallet_serializers import (
     WalletBalanceSerializer,
     WalletsSerializer,
 )
