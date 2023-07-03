@@ -12,6 +12,6 @@ COPY pyproject.toml poetry.lock ./
 
 RUN pip install poetry==${POETRY_VERSION} && poetry config virtualenvs.create false
 
-RUN poetry install --no-interaction --no-root --only main
+RUN poetry install --no-interaction --no-root
 
 COPY backend /code/
