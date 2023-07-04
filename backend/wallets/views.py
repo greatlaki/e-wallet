@@ -60,7 +60,7 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateAPIView):
+class TransactionRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = TransactionRetrieveUpdateSerializer
 
     def get_queryset(self, *args, **kwargs):
