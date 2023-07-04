@@ -15,4 +15,3 @@ class TransactionType(models.TextChoices):
 class RequestMethods(models.TextChoices):
     POST = "POST"
     PATCH = "PATCH"
-    DELETE = "DELETE"
