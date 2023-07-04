@@ -5,28 +5,29 @@ from rest_framework.permissions import IsAuthenticated
 from wallets.models import Transaction, Wallet
 from wallets.serializers.transaction_serialziers import (
     TransactionListCreateSerializer,
-    TransactionRetrieveUpdateDestroySerializer,
+    TransactionRetrieveUpdateSerializer,
 )
 from wallets.serializers.wallet_serializers import (
-    WalletBalanceSerializer,
-    WalletsSerializer,
+    WalletsBalanceSerializer,
+    WalletsListCreateSerializer,
+    WalletsRetrieveUpdateDestroySerializer,
 )
 
 
 class WalletsListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = WalletsSerializer
+    serializer_class = WalletsListCreateSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser:
             return Wallet.objects.all()
-        return Wallet.objects.filter(owner=user.pk).order_by("name")
+        return Wallet.objects.filter(owner=user.pk).order_by("id")
 
 
 class WalletsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = WalletsSerializer
+    serializer_class = WalletsRetrieveUpdateDestroySerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -37,7 +38,7 @@ class WalletsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
 
 class WalletsBalanceAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = WalletBalanceSerializer
+    serializer_class = WalletsBalanceSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -59,8 +60,8 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = TransactionRetrieveUpdateDestroySerializer
+class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = TransactionRetrieveUpdateSerializer
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user
@@ -69,6 +70,6 @@ class TransactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIV
         return Transaction.objects.filter(wallet__owner_id=user.pk)
 
     def get_permissions(self):
-        if self.request.method in [RequestMethods.PATCH, RequestMethods.DELETE]:
+        if self.request.method in [RequestMethods.PATCH]:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]

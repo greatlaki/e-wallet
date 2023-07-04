@@ -1,7 +1,6 @@
-from decimal import Decimal
-
 import pytest
 
+from tests.users.factories import UserFactory
 from tests.wallets.factories import WalletFactory
 
 
@@ -12,35 +11,29 @@ class TestPost:
         wallet = WalletFactory.build()
         data = {
             "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": wallet.balance,
         }
 
         response = api_client.post("/api/wallets/", data=data, format="json")
 
         assert response.status_code == 201
-        assert response.data["owner"] == active_user.pk
 
     def test_it_creates_wallet_by_admin_user(self, api_client, admin_user):
         api_client.force_authenticate(admin_user)
+        user = UserFactory()
         wallet = WalletFactory.build()
         data = {
+            "owner_id": user.id,
             "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": wallet.balance,
         }
 
         response = api_client.post("/api/wallets/", data=data, format="json")
 
         assert response.status_code == 201
-        assert response.data["owner"] == admin_user.pk
 
     def test_it_returns_error_if_user_is_not_active(self, api_client):
         wallet = WalletFactory.build()
         data = {
             "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": wallet.balance,
         }
 
         response = api_client.post("/api/wallets/", data=data, format="json")
@@ -49,58 +42,6 @@ class TestPost:
         assert (
             response.data["detail"] == "Authentication credentials were not provided."
         )
-
-    def test_it_returns_error_if_balance_is_not_positive(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory.build()
-        data = {
-            "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": Decimal("-10"),
-        }
-
-        response = api_client.post("/api/wallets/", data=data, format="json")
-
-        assert response.status_code == 400
-        assert response.data["balance"] == [
-            "Ensure this value is greater than or equal to 0.0."
-        ]
-
-    def test_it_returns_error_if_balance_has_more_than_2_decimal_places(
-        self, api_client, active_user
-    ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory.build()
-        data = {
-            "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": Decimal("10.1234"),
-        }
-
-        response = api_client.post("/api/wallets/", data=data, format="json")
-
-        assert response.status_code == 400
-        assert response.data["balance"] == [
-            "Ensure that there are no more than 2 decimal places."
-        ]
-
-    def test_it_returns_error_if_balance_has_more_than_32_digits_in_total(
-        self, api_client, active_user
-    ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory.build()
-        data = {
-            "name": wallet.name,
-            "wallet_number": wallet.wallet_number,
-            "balance": Decimal("123412341234123412341234123412341234.00"),
-        }
-
-        response = api_client.post("/api/wallets/", data=data, format="json")
-
-        assert response.status_code == 400
-        assert response.data["balance"] == [
-            "Ensure that there are no more than 32 digits in total."
-        ]
 
     def test_it_returns_error_if_required_fields_were_not_entered(
         self, api_client, active_user
@@ -113,44 +54,6 @@ class TestPost:
 
         assert response.status_code == 400
         assert response.data["name"][0] == "This field is required."
-        assert response.data["wallet_number"][0] == "This field is required."
-        assert response.data["balance"][0] == "This field is required."
-
-    def test_it_returns_error_if_wallet_number_already_exists(
-        self, api_client, active_user
-    ):
-        WalletFactory(wallet_number="test_number")
-
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory.build()
-        data = {
-            "name": wallet.name,
-            "wallet_number": "test_number",
-            "balance": wallet.balance,
-        }
-
-        response = api_client.post("/api/wallets/", data=data, format="json")
-
-        assert response.status_code == 400
-        assert response.data["wallet_number"] == ["The wallet number already exists"]
-
-    def test_it_returns_error_if_wallet_number_already_exists_in_another_case(
-        self, api_client, active_user
-    ):
-        WalletFactory(wallet_number="Test_Number")
-
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory.build()
-        data = {
-            "name": wallet.name,
-            "wallet_number": "test_number",
-            "balance": wallet.balance,
-        }
-
-        response = api_client.post("/api/wallets/", data=data, format="json")
-
-        assert response.status_code == 400
-        assert response.data["wallet_number"] == ["The wallet number already exists"]
 
 
 @pytest.mark.django_db
