@@ -12,7 +12,7 @@ class WalletFactory(factory.django.DjangoModelFactory):
     name = factory.LazyAttribute(
         lambda n: f"wallet of {n.owner.first_name} {n.owner.last_name}"
     )
-    wallet_number = factory.Faker("random_number")
+    wallet_number = factory.Faker("uuid4")
     balance = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
 
 

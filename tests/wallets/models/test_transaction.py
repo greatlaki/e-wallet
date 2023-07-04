@@ -15,7 +15,6 @@ class TestConstraints:
         wallet = WalletFactory(
             owner=active_user,
             name="wallet_name",
-            wallet_number="test_number",
             balance=Decimal("100.0"),
         )
 

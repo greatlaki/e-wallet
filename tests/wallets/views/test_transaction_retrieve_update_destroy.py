@@ -2,7 +2,6 @@ from decimal import Decimal
 
 import pytest
 from django_extended.constants import TransactionType
-from wallets.models import Transaction
 
 from tests.users.factories import UserFactory
 from tests.wallets.factories import TransactionFactory, WalletFactory
@@ -259,42 +258,4 @@ class TestPatch:
         assert (
             response.data["amount"]["amount"]
             == "Insufficient transfer amount, the minimum amount is 0.1"
-        )
-
-
-@pytest.mark.django_db
-class TestDelete:
-    def test_it_deletes_transaction(self, api_client, admin_user, active_user):
-        api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("1000.00"))
-        transaction = TransactionFactory(
-            wallet=wallet,
-            transaction_type=TransactionType.WITHDRAW,
-            amount=Decimal("500.0"),
-        )
-        assert Transaction.objects.count() == 1
-
-        response = api_client.delete(f"/api/wallets/transactions/{transaction.pk}/")
-
-        assert response.status_code == 204
-        assert Transaction.objects.count() == 0
-
-    def test_it_returns_error_if_user_deletes_transaction(
-        self, api_client, active_user
-    ):
-        user = UserFactory()
-        api_client.force_authenticate(user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
-        transaction = TransactionFactory(
-            wallet=wallet,
-            transaction_type=TransactionType.WITHDRAW,
-            amount=Decimal("500.0"),
-        )
-
-        response = api_client.delete(f"/api/wallets/transactions/{transaction.pk}/")
-
-        assert response.status_code == 403
-        assert (
-            response.data["detail"]
-            == "You do not have permission to perform this action."
         )

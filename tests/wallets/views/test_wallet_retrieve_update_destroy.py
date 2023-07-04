@@ -1,8 +1,10 @@
 from decimal import Decimal
 
 import pytest
+from django_extended.constants import TransactionType
 
-from tests.wallets.factories import WalletFactory
+from tests.users.factories import UserFactory
+from tests.wallets.factories import TransactionFactory, WalletFactory
 
 
 @pytest.mark.django_db
@@ -12,8 +14,8 @@ class TestGet:
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
-            balance=Decimal("0.0"),
+            wallet_number="ecf104a3-9e47-464f-9156-20688af1339e",
+            balance=Decimal("100.0"),
         )
 
         response = api_client.get(f"/api/wallets/{wallet.pk}/")
@@ -24,7 +26,7 @@ class TestGet:
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
+            wallet_number="3309cef5-ca5b-4f91-b8e2-47bd61dda81c",
             balance=Decimal("0.0"),
         )
 
@@ -42,7 +44,7 @@ class TestGet:
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
+            wallet_number="2c198326-2612-4d0a-ac16-886262a0874d",
             balance=Decimal("0.0"),
         )
 
@@ -52,117 +54,13 @@ class TestGet:
 
 
 @pytest.mark.django_db
-class TestPut:
-    def test_it_updates_wallet(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(
-            owner=active_user,
-            name="name",
-            wallet_number="wallet_number",
-            balance=Decimal("0.0"),
-        )
-        data = {
-            "name": "new_name",
-            "wallet_number": "new_wallet_number",
-            "balance": Decimal("123.00"),
-        }
-
-        response = api_client.put(
-            f"/api/wallets/{wallet.pk}/", data=data, format="json"
-        )
-
-        wallet.refresh_from_db()
-        assert response.status_code == 200
-        assert data["name"] == wallet.name
-        assert data["wallet_number"] == wallet.wallet_number
-        assert data["balance"] == wallet.balance
-
-    def test_it_returns_error_if_wallet_number_already_exists(
-        self, api_client, active_user
-    ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(
-            owner=active_user,
-            name="name",
-            wallet_number="wallet_number",
-            balance=Decimal("0.0"),
-        )
-        WalletFactory(
-            owner=active_user, name="name", wallet_number="r2d2", balance=Decimal("0.0")
-        )
-        data = {
-            "name": "new_name",
-            "wallet_number": "r2d2",
-            "balance": Decimal("144.00"),
-        }
-
-        response = api_client.put(
-            f"/api/wallets/{wallet.pk}/", data=data, format="json"
-        )
-
-        wallet.refresh_from_db()
-        assert response.status_code == 400
-        assert response.data["wallet_number"] == ["The wallet number already exists"]
-
-    def test_it_returns_error_if_wallet_number_already_exists_in_another_case(
-        self, api_client, active_user
-    ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(
-            owner=active_user,
-            name="name",
-            wallet_number="wallet_number",
-            balance=Decimal("0.0"),
-        )
-        WalletFactory(
-            owner=active_user, name="name", wallet_number="r2d2", balance=Decimal("0.0")
-        )
-        data = {
-            "name": "new_name",
-            "wallet_number": "R2D2",
-            "balance": Decimal("144.00"),
-        }
-
-        response = api_client.put(
-            f"/api/wallets/{wallet.pk}/", data=data, format="json"
-        )
-
-        wallet.refresh_from_db()
-        assert response.status_code == 400
-        assert response.data["wallet_number"] == ["The wallet number already exists"]
-
-    def test_it_returns_error_if_required_fields_were_not_entered(
-        self, api_client, active_user
-    ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(
-            owner=active_user,
-            name="name",
-            wallet_number="wallet_number",
-            balance=Decimal("0.0"),
-        )
-        data = {
-            "balance": Decimal("144.00"),
-        }
-
-        response = api_client.put(
-            f"/api/wallets/{wallet.pk}/", data=data, format="json"
-        )
-
-        wallet.refresh_from_db()
-        assert response.status_code == 400
-        assert response.data["name"][0] == "This field is required."
-        assert response.data["wallet_number"][0] == "This field is required."
-
-
-@pytest.mark.django_db
 class TestPatch:
-    def test_it_updates_wallet_partly(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_updates_wallet(self, api_client, active_user, admin_user):
+        api_client.force_authenticate(admin_user)
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
             balance=Decimal("0.0"),
         )
         data = {
@@ -174,10 +72,73 @@ class TestPatch:
             f"/api/wallets/{wallet.pk}/", data=data, format="json"
         )
 
-        wallet.refresh_from_db()
         assert response.status_code == 200
+        wallet.refresh_from_db()
         assert data["name"] == wallet.name
         assert data["balance"] == wallet.balance
+
+    def test_it_updates_name_if_auth_user_is_active(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(
+            owner=active_user,
+            name="name",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
+            balance=Decimal("0.0"),
+        )
+        data = {
+            "name": "new_name",
+        }
+
+        response = api_client.patch(
+            f"/api/wallets/{wallet.pk}/", data=data, format="json"
+        )
+
+        assert response.status_code == 200
+        wallet.refresh_from_db()
+        assert data["name"] == wallet.name
+
+    def test_it_returns_error_if_user_changes_balance(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(
+            owner=active_user,
+            name="name",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
+            balance=Decimal("0.0"),
+        )
+        data = {
+            "balance": Decimal("100.0"),
+        }
+
+        response = api_client.patch(
+            f"/api/wallets/{wallet.pk}/", data=data, format="json"
+        )
+
+        assert response.status_code == 400
+        assert (
+            response.data["balance"]["balance"] == "The user cannot change the balance"
+        )
+
+    def test_it_returns_error_if_user_updates_not_his_wallet(
+        self, api_client, active_user
+    ):
+        api_client.force_authenticate(active_user)
+        user = UserFactory()
+        wallet = WalletFactory(
+            owner=user,
+            name="name",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
+            balance=Decimal("0.0"),
+        )
+        data = {
+            "name": "new_name",
+        }
+
+        response = api_client.patch(
+            f"/api/wallets/{wallet.pk}/", data=data, format="json"
+        )
+
+        assert response.status_code == 404
+        assert response.data["detail"] == "Not found."
 
 
 @pytest.mark.django_db
@@ -187,7 +148,7 @@ class TestDelete:
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
             balance=Decimal("0.0"),
         )
 
@@ -200,10 +161,36 @@ class TestDelete:
         wallet = WalletFactory(
             owner=active_user,
             name="name",
-            wallet_number="wallet_number",
+            wallet_number="07c63267-752b-4ee8-b0c0-9b7e02f45b6c",
             balance=Decimal("0.0"),
         )
 
         response = api_client.delete(f"/api/wallets/{wallet.pk}/")
+
+        assert response.status_code == 204
+
+    def test_it_deletes_wallet_if_it_has_transactions(self, api_client, active_user):
+        user = UserFactory()
+        wallet1 = WalletFactory(owner=user, balance=Decimal("0.0"))
+        wallet2 = WalletFactory(owner=active_user, balance=Decimal("1000.0"))
+        TransactionFactory(
+            wallet=wallet2,
+            transaction_type=TransactionType.DEPOSIT,
+            amount=Decimal("10"),
+        )
+        TransactionFactory(
+            wallet=wallet2,
+            transaction_type=TransactionType.DEPOSIT,
+            amount=Decimal("20"),
+        )
+        TransactionFactory(
+            wallet=wallet2,
+            receiver=wallet1,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("100.0"),
+        )
+        api_client.force_authenticate(active_user)
+
+        response = api_client.delete(f"/api/wallets/{wallet2.pk}/")
 
         assert response.status_code == 204

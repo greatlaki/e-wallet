@@ -1,12 +1,46 @@
+from decimal import Decimal
+
 from django.core.validators import MinValueValidator
-from django_extended.serializers import ReadableHiddenField
+from django_extended.constants import RequestMethods
 from rest_framework import serializers
 from wallets.models import Wallet
 
 
-class WalletsSerializer(serializers.ModelSerializer):
-    owner = ReadableHiddenField(default=serializers.CurrentUserDefault())
-    wallet_number = serializers.CharField()
+class WalletsListCreateSerializer(serializers.ModelSerializer):
+    owner_id = serializers.IntegerField(required=False)
+    balance = serializers.DecimalField(
+        max_digits=32,
+        decimal_places=2,
+        validators=[MinValueValidator(0.0)],
+        default=Decimal("0.0"),
+    )
+
+    class Meta:
+        model = Wallet
+        fields = (
+            "id",
+            "owner_id",
+            "name",
+            "wallet_number",
+            "balance",
+        )
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and request.method == RequestMethods.POST:
+            attrs.pop("wallet_number", None)
+            attrs.pop("balance", None)
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        if not user.is_superuser:
+            validated_data["owner_id"] = user.id
+            return Wallet.objects.create(**validated_data)
+        return Wallet.objects.create(**validated_data)
+
+
+class WalletsRetrieveUpdateDestroySerializer(serializers.ModelSerializer):
     balance = serializers.DecimalField(
         max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
     )
@@ -15,22 +49,20 @@ class WalletsSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = (
             "id",
-            "owner",
             "name",
-            "wallet_number",
             "balance",
         )
 
-    def validate_wallet_number(self, wallet_number):
-        wallet_number_exists = Wallet.objects.filter(
-            wallet_number__iexact=wallet_number
-        ).exists()
-        if wallet_number_exists:
-            raise serializers.ValidationError("The wallet number already exists")
-        return wallet_number
+    def validate_balance(self, balance: Decimal):
+        user = self.context["request"].user
+        if not user.is_superuser and balance:
+            raise serializers.ValidationError(
+                {"balance": "The user cannot change the balance"}
+            )
+        return balance
 
 
-class WalletBalanceSerializer(serializers.ModelSerializer):
+class WalletsBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = (

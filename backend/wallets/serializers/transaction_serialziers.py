@@ -146,7 +146,7 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
         return super().create(validated_data)
 
 
-class TransactionRetrieveUpdateDestroySerializer(TransactionBaseSerializer):
+class TransactionRetrieveUpdateSerializer(TransactionBaseSerializer):
     wallet_id = serializers.IntegerField()
     receiver_id = serializers.IntegerField(required=False)
     amount = serializers.DecimalField(max_digits=32, decimal_places=2)
