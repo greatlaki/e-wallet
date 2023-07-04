@@ -169,7 +169,7 @@ class TestDelete:
 
         assert response.status_code == 204
 
-    def test_it_returns(self, api_client, active_user):
+    def test_it_deletes_wallet_if_it_has_transactions(self, api_client, active_user):
         user = UserFactory()
         wallet1 = WalletFactory(owner=user, balance=Decimal("0.0"))
         wallet2 = WalletFactory(owner=active_user, balance=Decimal("1000.0"))
