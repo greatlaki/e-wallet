@@ -34,7 +34,3 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 | POSTGRES_PASSWORD | postgres_password |
 | POSTGRES_HOST     | 127.0.0.1         |
 | POSTGRES_PORT     | 5432              |
-
-#### Running tests
-`cd local/path/to/e-wallet`<br>
-`poetry run pytest`
