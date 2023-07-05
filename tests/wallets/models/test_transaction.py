@@ -10,10 +10,10 @@ from tests.wallets.factories import TransactionFactory, WalletFactory
 @pytest.mark.django_db()
 class TestConstraints:
     def test_it_should_raise_error_if_amount_is_less_than_minimum_rate(
-        self, active_user
+        self, wallet_owner
     ):
         wallet = WalletFactory(
-            owner=active_user,
+            owner=wallet_owner,
             name="wallet_name",
             balance=Decimal("100.0"),
         )

@@ -3,8 +3,8 @@ import pytest
 
 @pytest.mark.django_db
 class TestPost:
-    def test_logout(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_logout(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         response = api_client.post("/api/users/logout/")
         assert response.status_code == 200
         assert response.data["success"] == "Successfully logged out"

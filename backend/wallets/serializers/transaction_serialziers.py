@@ -78,7 +78,7 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
                 transaction_type == TransactionType.WITHDRAW
                 or transaction_type == TransactionType.TRANSFER
             )
-            and not user.is_superuser
+            and not user.is_admin
             and wallet_id not in user.get_wallets_ids()
         ):
             raise serializers.ValidationError(

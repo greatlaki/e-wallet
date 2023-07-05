@@ -9,9 +9,9 @@ from tests.wallets.factories import TransactionFactory, WalletFactory
 
 @pytest.mark.django_db
 class TestPost:
-    def test_it_tops_up_balance(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("0"))
+    def test_it_tops_up_balance(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("0"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -27,8 +27,8 @@ class TestPost:
         wallet.refresh_from_db()
         assert data["amount"] == wallet.balance
 
-    def test_it_tops_up_balance_of_another_user(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_tops_up_balance_of_another_user(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
         wallet = WalletFactory(owner=user, balance=Decimal("1.0"))
         TransactionFactory.build()
@@ -65,9 +65,9 @@ class TestPost:
 
         assert response.status_code == 201
 
-    def test_it_withdraws_from_wallet_balance(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+    def test_it_withdraws_from_wallet_balance(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -84,10 +84,10 @@ class TestPost:
         assert wallet.balance == Decimal("1.00")
 
     def test_it_returns_error_if_amount_is_more_than_balance(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("10.00"))
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("10.00"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -104,8 +104,8 @@ class TestPost:
             "There are not enough funds on the balance, enter a smaller amount"
         ]
 
-    def test_it_returns_error_if_user_is_not_active(self, api_client, active_user):
-        wallet = WalletFactory(owner=active_user)
+    def test_it_returns_error_if_user_is_not_auth(self, api_client, wallet_owner):
+        wallet = WalletFactory(owner=wallet_owner)
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -123,10 +123,10 @@ class TestPost:
         )
 
     def test_it_returns_error_if_amount_is_less_than_minimum_transfer_rate(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user)
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner)
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -144,8 +144,8 @@ class TestPost:
             == "Insufficient transfer amount, the minimum amount is 0.1"
         )
 
-    def test_it_does_not_withdraw_if_user_is_not_owner(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_does_not_withdraw_if_user_is_not_owner(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
         wallet = WalletFactory(owner=user, balance=Decimal("100.0"))
         TransactionFactory.build()
@@ -164,10 +164,10 @@ class TestPost:
             "The user must be the owner of the wallet."
         ]
 
-    def test_it_sends_amount(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_sends_amount(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         wallet2 = WalletFactory(owner=user, balance=Decimal("100.00"))
         TransactionFactory.build()
         data = {
@@ -188,11 +188,11 @@ class TestPost:
         assert wallet2.balance == Decimal("150")
 
     def test_it_returns_error_if_sender_balance_is_less_than_amount(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("1.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("1.00"))
         wallet2 = WalletFactory(owner=user, balance=Decimal("100.00"))
         TransactionFactory.build()
         data = {
@@ -211,8 +211,8 @@ class TestPost:
             "There are not enough funds on the balance, enter a smaller amount"
         ]
 
-    def test_it_returns_error_if_wallets_do_not_exist(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_returns_error_if_wallets_do_not_exist(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         TransactionFactory.build()
         data = {
             "wallet_id": 123,
@@ -232,10 +232,10 @@ class TestPost:
         )
 
     def test_it_returns_error_if_receiver_wallet_was_not_entered(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -253,9 +253,9 @@ class TestPost:
         ]
 
     def test_it_returns_error_if_user_is_not_owner_of_sender_wallet(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
+        api_client.force_authenticate(wallet_owner)
         user1 = UserFactory()
         user2 = UserFactory()
         wallet1 = WalletFactory(owner=user1, balance=Decimal("100.00"))
@@ -278,11 +278,11 @@ class TestPost:
         ]
 
     def test_it_sends_amount_if_auth_user_is_admin(
-        self, api_client, active_user, admin_user
+        self, api_client, wallet_owner, admin_user
     ):
         api_client.force_authenticate(admin_user)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         wallet2 = WalletFactory(owner=user, balance=Decimal("10.00"))
         TransactionFactory.build()
         data = {
@@ -303,11 +303,11 @@ class TestPost:
         assert wallet2.balance == Decimal("60")
 
     def test_it_returns_error_if_transaction_is_transfer_and_recipient_was_specified(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
-        wallet2 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        api_client.force_authenticate(wallet_owner)
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
+        wallet2 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet1.pk,
@@ -326,10 +326,10 @@ class TestPost:
         ]
 
     def test_it_does_not_allow_to_transfer_from_the_same_wallet(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100"))
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100"))
         TransactionFactory.build()
         data = {
             "wallet_id": wallet.pk,
@@ -348,11 +348,11 @@ class TestPost:
 
 @pytest.mark.django_db
 class TestGet:
-    def test_it_returns_transaction(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_returns_transaction(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
-        wallet2 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
+        wallet2 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         wallet3 = WalletFactory(owner=user, balance=Decimal("0.00"))
         TransactionFactory(
             wallet=wallet1,
@@ -381,12 +381,12 @@ class TestGet:
         assert len(response.data) == 4
 
     def test_it_users_transactions_if_auth_user_is_admin(
-        self, api_client, active_user, admin_user
+        self, api_client, wallet_owner, admin_user
     ):
         api_client.force_authenticate(admin_user)
         user = UserFactory()
         wallet1 = WalletFactory(owner=user, balance=Decimal("100.00"))
-        wallet2 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet2 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
 
         TransactionFactory(
             wallet=wallet1,
@@ -414,8 +414,8 @@ class TestGet:
         assert response.status_code == 200
         assert len(response.data) == 4
 
-    def test_it_returns_error_if_user_is_not_active(self, api_client, active_user):
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+    def test_it_returns_error_if_user_is_not_auth(self, api_client, wallet_owner):
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
@@ -430,12 +430,12 @@ class TestGet:
         )
 
     def test_it_returns_transaction_if_user_is_sender_and_recipient(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
+        api_client.force_authenticate(wallet_owner)
         user1 = UserFactory()
         user2 = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("0.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("0.00"))
         wallet2 = WalletFactory(owner=user1, balance=Decimal("0.00"))
         wallet3 = WalletFactory(owner=user2, balance=Decimal("0.00"))
         TransactionFactory(
@@ -484,10 +484,10 @@ class TestGet:
 
         assert response.status_code == 200
 
-    def test_it_shows_wallet_balance_before_transfer(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_shows_wallet_balance_before_transfer(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("99.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("99.00"))
         wallet2 = WalletFactory(owner=user)
         TransactionFactory(
             wallet=wallet1,
@@ -501,9 +501,9 @@ class TestGet:
         assert response.status_code == 200
         assert Decimal(response.data[0]["wallet_balance"]) == Decimal("99.00")
 
-    def test_it_shows_wallet_balance_before_deposit(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("0.00"))
+    def test_it_shows_wallet_balance_before_deposit(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("0.00"))
         TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
@@ -515,9 +515,9 @@ class TestGet:
         assert response.status_code == 200
         assert Decimal(response.data[0]["wallet_balance"]) == Decimal("0")
 
-    def test_it_shows_wallet_balance_before_withdraw(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+    def test_it_shows_wallet_balance_before_withdraw(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.WITHDRAW,

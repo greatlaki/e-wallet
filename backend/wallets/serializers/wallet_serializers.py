@@ -34,7 +34,7 @@ class WalletsListCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        if not user.is_superuser:
+        if not user.is_admin:
             validated_data["owner_id"] = user.id
             return Wallet.objects.create(**validated_data)
         return Wallet.objects.create(**validated_data)
@@ -55,7 +55,7 @@ class WalletsRetrieveUpdateDestroySerializer(serializers.ModelSerializer):
 
     def validate_balance(self, balance: Decimal):
         user = self.context["request"].user
-        if not user.is_superuser and balance:
+        if user.is_wallet_owner and balance:
             raise serializers.ValidationError(
                 {"balance": "The user cannot change the balance"}
             )

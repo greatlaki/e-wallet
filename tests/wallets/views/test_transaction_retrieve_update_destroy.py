@@ -9,9 +9,9 @@ from tests.wallets.factories import TransactionFactory, WalletFactory
 
 @pytest.mark.django_db
 class TestGet:
-    def test_it_returns_transaction(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+    def test_it_returns_transaction(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             receiver=None,
@@ -24,8 +24,8 @@ class TestGet:
         assert response.status_code == 200
         assert response.data["id"] == transaction.id
 
-    def test_it_returns_error_if_user_is_not_auth(self, api_client, active_user):
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+    def test_it_returns_error_if_user_is_not_auth(self, api_client, wallet_owner):
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             receiver=None,
@@ -40,10 +40,10 @@ class TestGet:
             response.data["detail"] == "Authentication credentials were not provided."
         )
 
-    def test_it_shows_wallet_balance_before_transfer(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_shows_wallet_balance_before_transfer(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("99.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("99.00"))
         wallet2 = WalletFactory(owner=user)
         transaction = TransactionFactory(
             wallet=wallet1,
@@ -57,9 +57,9 @@ class TestGet:
         assert response.status_code == 200
         assert Decimal(response.data["wallet_balance"]) == Decimal("99.00")
 
-    def test_it_shows_wallet_balance_before_deposit(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("0.00"))
+    def test_it_shows_wallet_balance_before_deposit(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("0.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
@@ -71,9 +71,9 @@ class TestGet:
         assert response.status_code == 200
         assert Decimal(response.data["wallet_balance"]) == Decimal("0.00")
 
-    def test_it_shows_wallet_balance_before_withdraw(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("1000.00"))
+    def test_it_shows_wallet_balance_before_withdraw(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("1000.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.WITHDRAW,
@@ -88,9 +88,9 @@ class TestGet:
 
 @pytest.mark.django_db
 class TestPatch:
-    def test_it_updates_deposit_transaction(self, api_client, admin_user, active_user):
+    def test_it_updates_deposit_transaction(self, api_client, admin_user, wallet_owner):
         api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             receiver=None,
@@ -109,9 +109,11 @@ class TestPatch:
         wallet.refresh_from_db()
         assert wallet.balance == Decimal("600.0")
 
-    def test_it_updated_withdraw_transaction(self, api_client, admin_user, active_user):
+    def test_it_updated_withdraw_transaction(
+        self, api_client, admin_user, wallet_owner
+    ):
         api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.WITHDRAW,
@@ -129,10 +131,12 @@ class TestPatch:
         wallet.refresh_from_db()
         assert wallet.balance == Decimal("91.0")
 
-    def test_it_updated_transfer_transaction(self, api_client, admin_user, active_user):
+    def test_it_updated_transfer_transaction(
+        self, api_client, admin_user, wallet_owner
+    ):
         api_client.force_authenticate(admin_user)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         wallet2 = WalletFactory(owner=user, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet1,
@@ -156,10 +160,10 @@ class TestPatch:
         assert wallet2.balance == Decimal("110.0")
 
     def test_it_allows_admin_user_to_cancel_deposit_transaction(
-        self, api_client, admin_user, active_user
+        self, api_client, admin_user, wallet_owner
     ):
         api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
@@ -180,10 +184,10 @@ class TestPatch:
         assert transaction.transaction_type == TransactionType.CANCELLATION
 
     def test_it_allows_admin_user_to_cancel_withdraw_transaction(
-        self, api_client, admin_user, active_user
+        self, api_client, admin_user, wallet_owner
     ):
         api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.WITHDRAW,
@@ -204,11 +208,11 @@ class TestPatch:
         assert transaction.transaction_type == TransactionType.CANCELLATION
 
     def test_it_allows_admin_user_to_cancel_transfer_transaction(
-        self, api_client, admin_user, active_user
+        self, api_client, admin_user, wallet_owner
     ):
         api_client.force_authenticate(admin_user)
         user = UserFactory()
-        wallet1 = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet1 = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         wallet2 = WalletFactory(owner=user, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet1,
@@ -234,10 +238,10 @@ class TestPatch:
         assert transaction.transaction_type == TransactionType.CANCELLATION
 
     def test_it_returns_error_if_user_want_to_cancel_transaction(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.WITHDRAW,
@@ -258,10 +262,10 @@ class TestPatch:
         )
 
     def test_it_does_not_allow_no_admin_user_to_update_transaction(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        api_client.force_authenticate(wallet_owner)
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
@@ -282,10 +286,10 @@ class TestPatch:
         )
 
     def test_it_returns_error_if_amount_is_zero(
-        self, api_client, active_user, admin_user
+        self, api_client, wallet_owner, admin_user
     ):
         api_client.force_authenticate(admin_user)
-        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        wallet = WalletFactory(owner=wallet_owner, balance=Decimal("100.00"))
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
