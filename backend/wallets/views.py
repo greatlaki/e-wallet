@@ -20,7 +20,7 @@ class WalletsListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
+        if user.is_admin:
             return Wallet.objects.all()
         return Wallet.objects.filter(owner=user.pk).order_by("id")
 
@@ -31,7 +31,7 @@ class WalletsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
+        if user.is_admin:
             return Wallet.objects.all()
         return Wallet.objects.filter(owner=user.pk)
 
@@ -42,7 +42,7 @@ class WalletsBalanceAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
+        if user.is_admin:
             return Wallet.objects.all()
         return Wallet.objects.filter(owner=user.pk)
 
@@ -53,7 +53,7 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user
-        if user.is_superuser:
+        if user.is_admin:
             return Transaction.objects.all()
         return Transaction.objects.filter(
             Q(wallet__owner_id=user.pk) | Q(receiver__id=user.pk)
@@ -65,7 +65,7 @@ class TransactionRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user
-        if user.is_superuser:
+        if user.is_admin:
             return Transaction.objects.all()
         return Transaction.objects.filter(wallet__owner_id=user.pk)
 

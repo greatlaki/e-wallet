@@ -6,8 +6,8 @@ from tests.wallets.factories import WalletFactory
 
 @pytest.mark.django_db
 class TestPost:
-    def test_it_creates_wallet_by_active_user(self, api_client, active_user):
-        api_client.force_authenticate(active_user)
+    def test_it_creates_wallet_by_active_user(self, api_client, wallet_owner):
+        api_client.force_authenticate(wallet_owner)
         wallet = WalletFactory.build()
         data = {
             "name": wallet.name,
@@ -44,9 +44,9 @@ class TestPost:
         )
 
     def test_it_returns_error_if_required_fields_were_not_entered(
-        self, api_client, active_user
+        self, api_client, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
+        api_client.force_authenticate(wallet_owner)
         WalletFactory.build()
         data = {}
 
@@ -59,11 +59,11 @@ class TestPost:
 @pytest.mark.django_db
 class TestGet:
     def test_it_returns_wallets_list_if_user_is_admin(
-        self, api_client, active_user, admin_user
+        self, api_client, wallet_owner, admin_user
     ):
         api_client.force_authenticate(admin_user)
-        WalletFactory(owner=active_user)
-        WalletFactory(owner=active_user)
+        WalletFactory(owner=wallet_owner)
+        WalletFactory(owner=wallet_owner)
         WalletFactory(owner=admin_user)
         WalletFactory(owner=admin_user)
 
@@ -73,9 +73,9 @@ class TestGet:
         assert len(response.data) == 4
 
     def test_it_returns_empty_wallets_list_if_user_is_not_owner(
-        self, api_client, admin_user, active_user
+        self, api_client, admin_user, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
+        api_client.force_authenticate(wallet_owner)
         WalletFactory(owner=admin_user)
         WalletFactory(owner=admin_user)
 
@@ -85,12 +85,12 @@ class TestGet:
         assert len(response.data) == 0
 
     def test_it_returns_wallets_list_of_owner(
-        self, api_client, admin_user, active_user
+        self, api_client, admin_user, wallet_owner
     ):
-        api_client.force_authenticate(active_user)
-        WalletFactory(owner=active_user)
-        WalletFactory(owner=active_user)
-        WalletFactory(owner=active_user)
+        api_client.force_authenticate(wallet_owner)
+        WalletFactory(owner=wallet_owner)
+        WalletFactory(owner=wallet_owner)
+        WalletFactory(owner=wallet_owner)
         WalletFactory(owner=admin_user)
         WalletFactory(owner=admin_user)
 
@@ -100,11 +100,11 @@ class TestGet:
         assert len(response.data) == 3
 
     def test_it_returns_error_if_user_is_not_auth(
-        self, api_client, active_user, admin_user
+        self, api_client, wallet_owner, admin_user
     ):
-        WalletFactory(owner=active_user)
-        WalletFactory(owner=active_user)
-        WalletFactory(owner=active_user)
+        WalletFactory(owner=wallet_owner)
+        WalletFactory(owner=wallet_owner)
+        WalletFactory(owner=wallet_owner)
         WalletFactory(owner=admin_user)
         WalletFactory(owner=admin_user)
 
