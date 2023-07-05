@@ -1,6 +1,7 @@
 from typing import Optional
 
 from django.contrib.auth.models import BaseUserManager
+from django_extended.constants import UserRole
 
 
 class UserManager(BaseUserManager):
@@ -23,6 +24,7 @@ class UserManager(BaseUserManager):
         """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("role", UserRole.ADMIN)
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
