@@ -40,6 +40,51 @@ class TestGet:
             response.data["detail"] == "Authentication credentials were not provided."
         )
 
+    def test_it_shows_wallet_balance_before_transfer(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        user = UserFactory()
+        wallet1 = WalletFactory(owner=active_user, balance=Decimal("99.00"))
+        wallet2 = WalletFactory(owner=user)
+        transaction = TransactionFactory(
+            wallet=wallet1,
+            receiver=wallet2,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("70.0"),
+        )
+
+        response = api_client.get(f"/api/wallets/transactions/{transaction.pk}/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data["wallet_balance"]) == Decimal("99.00")
+
+    def test_it_shows_wallet_balance_before_deposit(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user, balance=Decimal("0.00"))
+        transaction = TransactionFactory(
+            wallet=wallet,
+            transaction_type=TransactionType.DEPOSIT,
+            amount=Decimal("70.0"),
+        )
+
+        response = api_client.get(f"/api/wallets/transactions/{transaction.pk}/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data["wallet_balance"]) == Decimal("0.00")
+
+    def test_it_shows_wallet_balance_before_withdraw(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user, balance=Decimal("1000.00"))
+        transaction = TransactionFactory(
+            wallet=wallet,
+            transaction_type=TransactionType.WITHDRAW,
+            amount=Decimal("99.0"),
+        )
+
+        response = api_client.get(f"/api/wallets/transactions/{transaction.pk}/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data["wallet_balance"]) == Decimal("1000.00")
+
 
 @pytest.mark.django_db
 class TestPatch:
@@ -118,7 +163,7 @@ class TestPatch:
         transaction = TransactionFactory(
             wallet=wallet,
             transaction_type=TransactionType.DEPOSIT,
-            amount=Decimal("100.0"),
+            amount=Decimal("1000.0"),
         )
         data = {
             "transaction_type": TransactionType.CANCELLATION,

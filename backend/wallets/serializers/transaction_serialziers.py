@@ -12,6 +12,10 @@ from wallets.services import cancel_wallet_transactions, wallet_transactions
 
 
 class TransactionBaseSerializer(serializers.ModelSerializer):
+    wallet_balance = serializers.DecimalField(
+        source="wallet.balance", max_digits=32, decimal_places=2, read_only=True
+    )
+
     def validate_amount(self, amount: Decimal):
         if amount < MINIMUM_TRANSFER_RATE:
             raise serializers.ValidationError(
@@ -96,8 +100,13 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
         ):
             raise serializers.ValidationError(
                 {
-                    "transaction_type": "The user cannot change transaction types. The transaction can only be canceled by the administrator."
+                    "transaction_type": "The user cannot change transaction types. "
+                    "The transaction can only be canceled by the administrator."
                 }
+            )
+        if receiver_id and wallet_id == receiver_id:
+            raise serializers.ValidationError(
+                {"receiver_id": "The recipient cannot be the sender"}
             )
 
     def validate(self, attrs):
@@ -135,6 +144,7 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
             "receiver_id",
             "amount",
             "transaction_type",
+            "wallet_balance",
         )
 
     def create(self, validated_data):
@@ -162,6 +172,7 @@ class TransactionRetrieveUpdateSerializer(TransactionBaseSerializer):
             "receiver_id",
             "amount",
             "transaction_type",
+            "wallet_balance",
         )
 
     def update(self, instance, validated_data):

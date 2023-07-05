@@ -325,6 +325,26 @@ class TestPost:
             "The recipient can only be specified if the transaction type is transfer"
         ]
 
+    def test_it_does_not_allow_to_transfer_from_the_same_wallet(
+        self, api_client, active_user
+    ):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user, balance=Decimal("100"))
+        TransactionFactory.build()
+        data = {
+            "wallet_id": wallet.pk,
+            "receiver_id": wallet.pk,
+            "amount": Decimal("90.00"),
+            "transaction_type": TransactionType.TRANSFER,
+        }
+
+        response = api_client.post(
+            "/api/wallets/transactions/", data=data, format="json"
+        )
+
+        assert response.status_code == 400
+        assert response.data["receiver_id"] == ["The recipient cannot be the sender"]
+
 
 @pytest.mark.django_db
 class TestGet:
@@ -463,3 +483,48 @@ class TestGet:
         response = api_client.get("/api/wallets/transactions/")
 
         assert response.status_code == 200
+
+    def test_it_shows_wallet_balance_before_transfer(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        user = UserFactory()
+        wallet1 = WalletFactory(owner=active_user, balance=Decimal("99.00"))
+        wallet2 = WalletFactory(owner=user)
+        TransactionFactory(
+            wallet=wallet1,
+            receiver=wallet2,
+            transaction_type=TransactionType.TRANSFER,
+            amount=Decimal("70.0"),
+        )
+
+        response = api_client.get("/api/wallets/transactions/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data[0]["wallet_balance"]) == Decimal("99.00")
+
+    def test_it_shows_wallet_balance_before_deposit(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user, balance=Decimal("0.00"))
+        TransactionFactory(
+            wallet=wallet,
+            transaction_type=TransactionType.DEPOSIT,
+            amount=Decimal("77.0"),
+        )
+
+        response = api_client.get("/api/wallets/transactions/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data[0]["wallet_balance"]) == Decimal("0")
+
+    def test_it_shows_wallet_balance_before_withdraw(self, api_client, active_user):
+        api_client.force_authenticate(active_user)
+        wallet = WalletFactory(owner=active_user, balance=Decimal("100.00"))
+        TransactionFactory(
+            wallet=wallet,
+            transaction_type=TransactionType.WITHDRAW,
+            amount=Decimal("77.0"),
+        )
+
+        response = api_client.get("/api/wallets/transactions/")
+
+        assert response.status_code == 200
+        assert Decimal(response.data[0]["wallet_balance"]) == Decimal("100")
