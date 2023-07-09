@@ -114,6 +114,7 @@ class TestPost:
         assert response.status_code == 201
         mock_delay.assert_called_once()
 
+    @pytest.mark.skipif(not settings.CELERY_RUN, reason="requires running Celery")
     @mock.patch.object(send_registration_email, "delay")
     @pytest.mark.django_db
     def test_it_does_not_send_message_if_registration_failed(
