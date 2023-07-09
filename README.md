@@ -43,4 +43,5 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 ### Sending email
 <p>To use sending email, you should set up RUN_CELERY=True. Also, run redis by the a command</p>
 
-`docker run -d -p 6379:6379 redis`
+### To run tests
+`poetry run pytest`
