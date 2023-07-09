@@ -24,8 +24,3 @@ def admin_user():
     user.role = UserRole.ADMIN
     user.save()
     return user
-
-
-@pytest.fixture(scope="session")
-def celery_config():
-    return {"broker_url": "memory://", "result_backend": "redis://"}
