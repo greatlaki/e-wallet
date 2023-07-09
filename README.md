@@ -37,6 +37,9 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 | POSTGRES_HOST     | 127.0.0.1         |
 | POSTGRES_PORT     | 5432              |
 
+### Then run the following command in the same directory as the `docker-compose.yml` file to start the container.
+`docker compose up`
+
 ### Sending email
 <p>To use sending email, you should set up RUN_CELERY=True. Also, run redis by the a command</p>
 
