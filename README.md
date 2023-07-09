@@ -24,6 +24,8 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 | SECRET_KEY    | django-insecure-8x92vy |
 | DEBUG         | False                  |
 | ALLOWED_HOSTS | localhost              |
+| RUN_CELERY    | False                  |
+
 
 ### Settings of the SQL
 
@@ -34,3 +36,17 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 | POSTGRES_PASSWORD | postgres_password |
 | POSTGRES_HOST     | 127.0.0.1         |
 | POSTGRES_PORT     | 5432              |
+
+### Docker
+Then run the following command in the same directory as the `docker-compose.yml` file to start the container.
+`docker compose up`
+
+### Sending email
+To use sending email, you should set up RUN_CELERY=True. Also, run redis by the a command
+
+`docker run -d -p 6379:6379 redis`
+
+### To run tests
+`poetry run pytest`
+
+
