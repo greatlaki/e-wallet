@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+from django.conf import settings
 from users.tasks import send_registration_email
 
 from tests.users.factories import UserFactory
@@ -93,6 +94,7 @@ class TestPost:
         assert response.status_code == 400
         assert response.data["email"][0] == "This email already exist"
 
+    @pytest.mark.skipif(not settings.CELERY_RUN, reason="requires running Celery")
     @mock.patch.object(send_registration_email, "delay")
     @pytest.mark.django_db
     def test_it_sends_message_to_email_upon_successful_registration(
