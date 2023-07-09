@@ -139,6 +139,9 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = 587
 
+# Celery run
+CELERY_RUN = os.getenv("CELERY_RUN", False)
+
 # Redis related settings
 REDIS_HOST = "0.0.0.0"
 REDIS_PORT = "6379"

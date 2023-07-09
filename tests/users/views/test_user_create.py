@@ -1,4 +1,7 @@
+from unittest import mock
+
 import pytest
+from users.tasks import send_registration_email
 
 from tests.users.factories import UserFactory
 
@@ -89,3 +92,40 @@ class TestPost:
 
         assert response.status_code == 400
         assert response.data["email"][0] == "This email already exist"
+
+    @mock.patch.object(send_registration_email, "delay")
+    @pytest.mark.django_db
+    def test_it_sends_message_to_email_upon_successful_registration(
+        self, mock_delay, api_client
+    ):
+        user = UserFactory.build()
+        data = {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": "test@example.com",
+            "password": user.password,
+            "confirm_password": user.password,
+        }
+
+        response = api_client.post("/api/users/register/", data=data, format="json")
+
+        assert response.status_code == 201
+        mock_delay.assert_called_once()
+
+    @mock.patch.object(send_registration_email, "delay")
+    @pytest.mark.django_db
+    def test_it_does_not_send_message_if_registration_failed(
+        self, mock_delay, api_client
+    ):
+        user = UserFactory.build()
+        data = {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "password": user.password,
+            "confirm_password": user.password,
+        }
+
+        response = api_client.post("/api/users/register/", data=data, format="json")
+
+        assert response.status_code == 400
+        mock_delay.assert_not_called()

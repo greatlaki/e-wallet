@@ -33,3 +33,4 @@ DJANGO_SETTINGS_MODULE = "app.settings"
 pythonpath = "backend"
 testpaths = "tests"
 python_files = "tests.py test_*.py *_tests.py"
+pytest_plugins = ["celery.contrib.pytest"]
