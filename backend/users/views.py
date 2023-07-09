@@ -4,11 +4,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import User
 from users.serializers import LoginSerializer, RegisterSerializer
+from users.tasks import send_registration_email
 
 
 class RegisterApiView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     queryset = User.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        user = super().post(request, *args, **kwargs)
+        user_email = user.data["email"]
+        send_registration_email.delay(user_email)
+        return Response(user.data, status=status.HTTP_201_CREATED)
 
 
 class LoginApiView(generics.GenericAPIView):
