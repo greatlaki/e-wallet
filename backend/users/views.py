@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import logout
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -14,7 +15,8 @@ class RegisterApiView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         user = super().post(request, *args, **kwargs)
         user_email = user.data["email"]
-        send_registration_email.delay(user_email)
+        if settings.CELERY_RUN:
+            send_registration_email.delay(user_email)
         return Response(user.data, status=status.HTTP_201_CREATED)
 
 
