@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+from django.conf import settings
 from users.tasks import send_registration_email
 
 from tests.users.factories import UserFactory
@@ -8,6 +9,7 @@ from tests.users.factories import UserFactory
 
 @pytest.mark.django_db
 class TestPost:
+    @pytest.mark.celery(result_backend=settings.CELERY_RESULT_BACKEND)
     def test_it_creates_user(self, api_client):
         user = UserFactory.build()
 
