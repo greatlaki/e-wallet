@@ -1,11 +1,20 @@
 # E-Wallet
 
+### Required tools
+Make sure you have installed following tools:
+
+- python >= 3.11
+- poetry >= 1.0.0, python dependencies management tool
+- pre-commit, git hooks management tool
+- docker >= 24.0.2
+- docker compose >= 2.19.1
+
 ### Setting up the project
 
-#### Clone the repository
+#### Clone the repository (Clone with SSH)
 `git@github.com:greatlaki/e-wallet.git`
 
-#### Set local python
+#### Set a local python 3.11.* version
 `pyenv local 3.11.4`<br>
 #### Install poetry
 `pip install poetry`<br>
@@ -13,6 +22,9 @@
 `poetry env use 3.11.4`<br>
 #### Install dependencies
 `poetry install`
+
+#### Install pre commit hooks
+`pre-commit install`
 
 Go to the folder where you cloned the project. Add variables to the dotenv file
 ### Variables of the dotenv file
@@ -48,5 +60,3 @@ To use sending email, you should set up RUN_CELERY=True. Also, run redis by the 
 
 ### To run tests
 `poetry run pytest`
-
-
