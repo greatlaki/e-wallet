@@ -4,22 +4,25 @@
 Make sure you have installed following tools:
 
 - python >= 3.11
-- poetry >= 1.0.0, python dependencies management tool
-- pre-commit, git hooks management tool
+- [pyenv](https://github.com/pyenv/pyenv)
+- [poetry](https://python-poetry.org/)
+- [pre-commit](https://pre-commit.com/)
 - docker >= 24.0.2
 - docker compose >= 2.19.1
 
 ### Setting up the project
 
-#### Clone the repository (Clone with SSH)
+#### Clone the repository (clone with SSH)
 `git@github.com:greatlaki/e-wallet.git`
 
 #### Set a local python 3.11.* version
-`pyenv local 3.11.4`<br>
+`pyenv local 3.11.*`<br>
 #### Install poetry
 `pip install poetry`<br>
+#### Create a `pyproject.toml`
+`poetry init`<br>
 #### Create new poetry virtualenv
-`poetry env use 3.11.4`<br>
+`poetry env use 3.11.*`<br>
 #### Install dependencies
 `poetry install`
 
@@ -39,7 +42,7 @@ Go to the folder where you cloned the project. Add variables to the dotenv file
 | RUN_CELERY    | False                  |
 
 
-### Settings of the SQL
+### Settings of the PostgreSQL
 
 | Name              | Sample            |
 |-------------------|-------------------|
