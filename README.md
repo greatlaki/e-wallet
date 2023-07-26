@@ -1,6 +1,6 @@
 # E-Wallet
 
-### About (need to add smth)
+### About (need to add smth about the project)
 ...
 ### Required tools
 Make sure you have installed following tools:
