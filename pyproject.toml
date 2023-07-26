@@ -22,14 +22,47 @@ pre-commit = "^3.3.3"
 drf-yasg = "^1.21.6"
 celery = "^5.3.1"
 redis = "^4.6.0"
+django-stubs = {extras = ["compatible-mypy"], version = "^4.2.3"}
+djangorestframework-stubs = "^3.14.2"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool]
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "app.settings"
 pythonpath = "backend"
 testpaths = "tests"
 python_files = "tests.py test_*.py *_tests.py"
+
+[tool.mypy]
+mypy_path = "./backend"
+plugins = [ "mypy_django_plugin.main", "mypy_drf_plugin.main" ]
+ignore_missing_imports = "True"
+pretty = "True"
+
+[[tool.mypy.overrides]]
+module = ["*.migrations.*", "__init__", ".env.example"]
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "app.settings"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+exclude = [
+    ".git",
+    "*/migrations/*",
+    "*/static/*",
+    ".venv",
+    "__init__.py"
+]
+ignore = ["B009", "B904"]
+select = ["B","C","E","F","W","T"]
+
+[tool.ruff.mccabe]
+max-complexity = 18

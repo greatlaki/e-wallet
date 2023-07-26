@@ -28,6 +28,10 @@ repos:
       - id: mypy
         name: Type checking with mypy
         language: system
-        types: [ python ]
-        entry: mypy --install-types --non-interactive --ignore-missing-imports
+        entry: poetry run mypy --install-types --non-interactive
         verbose: true
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.280
+    hooks:
+      - id: ruff

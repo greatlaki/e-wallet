@@ -17,7 +17,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Wallet",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.CharField(max_length=255)),
@@ -25,13 +33,17 @@ class Migration(migrations.Migration):
                 (
                     "balance",
                     models.DecimalField(
-                        decimal_places=2, max_digits=32, validators=[django.core.validators.MinValueValidator(0.0)]
+                        decimal_places=2,
+                        max_digits=32,
+                        validators=[django.core.validators.MinValueValidator(0.0)],
                     ),
                 ),
                 (
                     "owner",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="wallets", to=settings.AUTH_USER_MODEL
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="wallets",
+                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
@@ -42,7 +54,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Transaction",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("amount", models.DecimalField(decimal_places=2, max_digits=32)),
@@ -70,7 +90,9 @@ class Migration(migrations.Migration):
                 (
                     "wallet",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="transactions", to="wallets.wallet"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="transactions",
+                        to="wallets.wallet",
                     ),
                 ),
             ],
