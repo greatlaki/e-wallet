@@ -54,22 +54,11 @@ jobs:
           POSTGRES_PASSWORD: postgres
         run: |
             poetry run coverage run -m pytest
-            poetry run coverage report
-            poetry run coverage lcov
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
-        with:
-          files: coverage.lcov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-#      - name: Upload coverage report as artifact
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: code-coverage-report
-#          path: coverage-report/code-coverage.html
-#          retention-days: 7
 
       - name: Lint
         run: poetry run ruff backend/.

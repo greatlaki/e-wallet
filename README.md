@@ -1,6 +1,6 @@
 # E-Wallet
 
-[![codecov](https://codecov.io/gh/greatlaki/e-wallet/branch/main/graph/badge.svg?token=YBOI2S1VWE)](https://codecov.io/gh/greatlaki/e-wallet)
+[![codecov](https://codecov.io/gh/greatlaki/e-wallet/branch/Refactoring/Readme/graph/badge.svg?token=YBOI2S1VWE)](https://codecov.io/gh/greatlaki/e-wallet)
 
 ### About (need to add smth about the project)
 ...
