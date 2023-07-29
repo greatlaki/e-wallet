@@ -1,6 +1,6 @@
 # E-Wallet
 
-![coverage](https://github.com/greatlaki/e-wallet/.github/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/greatlaki/e-wallet/branch/main/graph/badge.svg?token=YBOI2S1VWE)](https://codecov.io/gh/greatlaki/e-wallet)
 
 ### About (need to add smth about the project)
 ...
