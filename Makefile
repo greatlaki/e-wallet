@@ -1,7 +1,5 @@
-lint:
-	cd backend && ./manage.py makemigrations --check --no-input --dry-run
-	flake8 backend
-	cd backend && mypy
+server:
+	cd backend && ./manage.py migrate && ./manage.py runserver
 
 test:
 	cd backend && pytest --ff -x --cov-report=xml --cov=. --cov-append -m 'single_thread'

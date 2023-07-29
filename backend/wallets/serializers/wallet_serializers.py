@@ -41,9 +41,7 @@ class WalletsListCreateSerializer(serializers.ModelSerializer):
 
 
 class WalletsRetrieveUpdateDestroySerializer(serializers.ModelSerializer):
-    balance = serializers.DecimalField(
-        max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)]
-    )
+    balance = serializers.DecimalField(max_digits=32, decimal_places=2, validators=[MinValueValidator(0.0)])
 
     class Meta:
         model = Wallet
@@ -56,9 +54,7 @@ class WalletsRetrieveUpdateDestroySerializer(serializers.ModelSerializer):
     def validate_balance(self, balance: Decimal):
         user = self.context["request"].user
         if user.is_wallet_owner and balance:
-            raise serializers.ValidationError(
-                {"balance": "The user cannot change the balance"}
-            )
+            raise serializers.ValidationError({"balance": "The user cannot change the balance"})
         return balance
 
 

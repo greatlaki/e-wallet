@@ -12,23 +12,17 @@ from wallets.services import cancel_wallet_transactions, wallet_transactions
 
 
 class TransactionBaseSerializer(serializers.ModelSerializer):
-    wallet_balance = serializers.DecimalField(
-        source="wallet.balance", max_digits=32, decimal_places=2, read_only=True
-    )
+    wallet_balance = serializers.DecimalField(source="wallet.balance", max_digits=32, decimal_places=2, read_only=True)
 
     def validate_amount(self, amount: Decimal):
         if amount < MINIMUM_TRANSFER_RATE:
-            raise serializers.ValidationError(
-                {"amount": "Insufficient transfer amount, the minimum amount is 0.1"}
-            )
+            raise serializers.ValidationError({"amount": "Insufficient transfer amount, the minimum amount is 0.1"})
         return amount
 
     def validate_wallet_id(self, wallet_id: int):
         wallet_exists = Wallet.objects.filter(id=wallet_id).exists()
         if not wallet_exists:
-            raise serializers.ValidationError(
-                {"wallet_id": "The wallet does not exist."}
-            )
+            raise serializers.ValidationError({"wallet_id": "The wallet does not exist."})
         return wallet_id
 
     def validate_receiver_id(self, receiver_id: int):
@@ -36,9 +30,7 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
             return
         wallet_exists = Wallet.objects.filter(id=receiver_id).exists()
         if not wallet_exists:
-            raise serializers.ValidationError(
-                {"receiver_id": "The wallet does not exist."}
-            )
+            raise serializers.ValidationError({"receiver_id": "The wallet does not exist."})
         return receiver_id
 
     def validation_wallet_balance(
@@ -54,13 +46,10 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
             return
         wallet = Wallet.objects.get(id=wallet_id)
         if (
-            transaction_type == TransactionType.TRANSFER
-            or transaction_type == TransactionType.WITHDRAW
+            transaction_type == TransactionType.TRANSFER or transaction_type == TransactionType.WITHDRAW
         ) and amount > wallet.balance:
             raise serializers.ValidationError(
-                {
-                    "amount": "There are not enough funds on the balance, enter a smaller amount"
-                }
+                {"amount": "There are not enough funds on the balance, enter a smaller amount"}
             )
 
     @staticmethod
@@ -74,30 +63,18 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
         if not transaction_type:
             return
         if (
-            (
-                transaction_type == TransactionType.WITHDRAW
-                or transaction_type == TransactionType.TRANSFER
-            )
+            (transaction_type == TransactionType.WITHDRAW or transaction_type == TransactionType.TRANSFER)
             and not user.is_admin
             and wallet_id not in user.get_wallets_ids()
         ):
-            raise serializers.ValidationError(
-                {"wallet_id": "The user must be the owner of the wallet."}
-            )
+            raise serializers.ValidationError({"wallet_id": "The user must be the owner of the wallet."})
         if transaction_type == TransactionType.TRANSFER and not receiver_id:
-            raise serializers.ValidationError(
-                {"receiver_id": "The wallet of the recipient must be entered."}
-            )
+            raise serializers.ValidationError({"receiver_id": "The wallet of the recipient must be entered."})
         if receiver_id and transaction_type != TransactionType.TRANSFER:
             raise serializers.ValidationError(
-                {
-                    "receiver_id": "The recipient can only be specified if the transaction type is transfer"
-                }
+                {"receiver_id": "The recipient can only be specified if the transaction type is transfer"}
             )
-        if (
-            request_method == RequestMethods.PATCH
-            and transaction_type != TransactionType.CANCELLATION
-        ):
+        if request_method == RequestMethods.PATCH and transaction_type != TransactionType.CANCELLATION:
             raise serializers.ValidationError(
                 {
                     "transaction_type": "The user cannot change transaction types. "
@@ -105,9 +82,7 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
                 }
             )
         if receiver_id and wallet_id == receiver_id:
-            raise serializers.ValidationError(
-                {"receiver_id": "The recipient cannot be the sender"}
-            )
+            raise serializers.ValidationError({"receiver_id": "The recipient cannot be the sender"})
 
     def validate(self, attrs):
         user = self.context["request"].user
@@ -116,12 +91,8 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
         receiver_id = attrs.get("receiver_id")
         amount = attrs.get("amount")
         transaction_type = attrs.get("transaction_type")
-        self.validation_wallet_balance(
-            wallet_id, amount, transaction_type, request_method
-        )
-        self.validate_wallet_transaction(
-            user, wallet_id, receiver_id, transaction_type, request_method
-        )
+        self.validation_wallet_balance(wallet_id, amount, transaction_type, request_method)
+        self.validate_wallet_transaction(user, wallet_id, receiver_id, transaction_type, request_method)
         return attrs
 
 
@@ -132,9 +103,7 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
         max_digits=32,
         decimal_places=2,
     )
-    transaction_type = serializers.ChoiceField(
-        choices=TransactionType.choices, required=True
-    )
+    transaction_type = serializers.ChoiceField(choices=TransactionType.choices, required=True)
 
     class Meta:
         model = Transaction
@@ -160,9 +129,7 @@ class TransactionRetrieveUpdateSerializer(TransactionBaseSerializer):
     wallet_id = serializers.IntegerField()
     receiver_id = serializers.IntegerField(required=False)
     amount = serializers.DecimalField(max_digits=32, decimal_places=2)
-    transaction_type = serializers.ChoiceField(
-        choices=TransactionType.choices, required=False
-    )
+    transaction_type = serializers.ChoiceField(choices=TransactionType.choices, required=False)
 
     class Meta:
         model = Transaction

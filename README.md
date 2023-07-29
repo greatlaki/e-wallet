@@ -1,5 +1,7 @@
 # E-Wallet
 
+![coverage](https://github.com/greatlaki/e-wallet/.github/workflows/ci.yml/badge.svg)
+
 ### About (need to add smth about the project)
 ...
 ### Required tools

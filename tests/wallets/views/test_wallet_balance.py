@@ -32,13 +32,9 @@ class TestGet:
         response = api_client.get(f"/api/wallets/{wallet.pk}/balance/")
 
         assert response.status_code == 401
-        assert (
-            response.data["detail"] == "Authentication credentials were not provided."
-        )
+        assert response.data["detail"] == "Authentication credentials were not provided."
 
-    def test_it_returns_user_balance_if_auth_user_is_admin(
-        self, api_client, wallet_owner, admin_user
-    ):
+    def test_it_returns_user_balance_if_auth_user_is_admin(self, api_client, wallet_owner, admin_user):
         api_client.force_authenticate(admin_user)
         WalletFactory(owner=wallet_owner, balance=Decimal("32.00"))
         WalletFactory(owner=wallet_owner, balance=Decimal("44.00"))

@@ -55,9 +55,7 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
         user = self.request.user
         if user.is_admin:
             return Transaction.objects.all()
-        return Transaction.objects.filter(
-            Q(wallet__owner_id=user.pk) | Q(receiver__id=user.pk)
-        )
+        return Transaction.objects.filter(Q(wallet__owner_id=user.pk) | Q(receiver__id=user.pk))
 
 
 class TransactionRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):

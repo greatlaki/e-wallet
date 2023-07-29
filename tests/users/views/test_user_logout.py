@@ -12,6 +12,4 @@ class TestPost:
     def test_it_returns_error_if_auth_credentials_were_not_provided(self, api_client):
         response = api_client.post("/api/users/logout/")
         assert response.status_code == 401
-        assert (
-            response.data["detail"] == "Authentication credentials were not provided."
-        )
+        assert response.data["detail"] == "Authentication credentials were not provided."
