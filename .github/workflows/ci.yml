@@ -46,7 +46,7 @@ jobs:
         run: poetry install --no-interaction --no-root
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
-      - name: Test with pytest
+      - name: Run tests and collect coverage
         env:
           POSTGRES_HOST: localhost
           POSTGRES_DB: postgres
@@ -54,8 +54,6 @@ jobs:
           POSTGRES_PASSWORD: postgres
         run: |
             poetry run coverage run -m pytest
-            poetry run coverage report
-            poetry run coverage xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
