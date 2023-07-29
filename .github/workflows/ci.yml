@@ -61,4 +61,4 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Lint
-        run: poetry run ruff backend/.
+        run: poetry run ruff .
