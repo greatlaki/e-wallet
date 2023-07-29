@@ -55,12 +55,12 @@ jobs:
         run: |
             poetry run coverage run -m pytest
             poetry run coverage report
-            poetry run coverage xml
+            poetry run coverage lcov
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: coverage.xml
+          files: coverage.lcov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
