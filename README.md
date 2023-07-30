@@ -2,8 +2,7 @@
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/greatlaki/e-wallet/main.svg)](https://results.pre-commit.ci/latest/github/greatlaki/e-wallet/main)
 [![E-Wallet CI](https://github.com/greatlaki/e-wallet/actions/workflows/ci.yml/badge.svg)](https://github.com/greatlaki/e-wallet/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/greatlaki/e-wallet/branch/main/graph/badge.svg?token=YBOI2S1VWE)](https://codecov.io/gh/greatlaki/e-wallet)
-
+[![Test Coverage](https://api.codeclimate.com/v1/badges/3952590c3b0aaee42fa5/test_coverage)](https://codeclimate.com/github/greatlaki/e-wallet/test_coverage)
 ### About
 The E-Wallet project is an application for managing electronic wallets using a REST API.
 The system allows users to create their wallets, top them up, check their balance, withdraw funds,
