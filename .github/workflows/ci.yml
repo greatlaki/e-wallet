@@ -57,7 +57,6 @@ jobs:
             poetry run coverage report
             poetry run coverage xml
 
-
       - name: Upload code coverage to codeclimate
         uses: paambaati/codeclimate-action@v3.2.0
         env:
