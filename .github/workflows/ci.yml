@@ -1,4 +1,4 @@
-name: Checks
+name: CI
 
 on: [push]
 
@@ -46,14 +46,19 @@ jobs:
         run: poetry install --no-interaction --no-root
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
-      - name: Test with pytest
+      - name: Run tests and collect coverage
         env:
           POSTGRES_HOST: localhost
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         run: |
-            poetry run pytest
+            poetry run coverage run -m pytest
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Lint
-        run: poetry run flake8 --max-line-length 120  --exclude=*/migrations/*
+        run: poetry run ruff .

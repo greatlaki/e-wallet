@@ -19,9 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = attrs.get("password")
 
         if password != attrs.get("confirm_password"):
-            raise serializers.ValidationError(
-                {"confirm_password": "The password not confirmed"}
-            )
+            raise serializers.ValidationError({"confirm_password": "The password not confirmed"})
 
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError({"email": "This email already exist"})

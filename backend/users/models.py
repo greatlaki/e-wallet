@@ -12,9 +12,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    role = models.CharField(
-        max_length=25, choices=UserRole.choices, default=UserRole.WALLET_OWNER
-    )
+    role = models.CharField(max_length=25, choices=UserRole.choices, default=UserRole.WALLET_OWNER)
 
     USERNAME_FIELD = "email"
 

@@ -48,9 +48,7 @@ class Transaction(BaseModel):
 
     def clean(self):
         if self.amount < MINIMUM_TRANSFER_RATE:
-            raise ValidationError(
-                {"amount": "Insufficient transfer amount, the minimum amount is 0.1"}
-            )
+            raise ValidationError({"amount": "Insufficient transfer amount, the minimum amount is 0.1"})
         return super().clean()
 
     def save(self, *args, **kwargs):

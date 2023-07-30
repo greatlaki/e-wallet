@@ -1,52 +1,41 @@
 # E-Wallet
 
-### Setting up the project
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/greatlaki/e-wallet/main.svg)](https://results.pre-commit.ci/latest/github/greatlaki/e-wallet/main)
+[![E-Wallet CI](https://github.com/greatlaki/e-wallet/actions/workflows/ci.yml/badge.svg)](https://github.com/greatlaki/e-wallet/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/greatlaki/e-wallet/branch/main/graph/badge.svg?token=YBOI2S1VWE)](https://codecov.io/gh/greatlaki/e-wallet)
 
-#### Clone the repository
-`git@github.com:greatlaki/e-wallet.git`
+### About
+The E-Wallet project is an application for managing electronic wallets using a REST API.
+The system allows users to create their wallets, top them up, check their balance, withdraw funds,
+and perform wallet-to-wallet transactions.
 
-#### Set local python
-`pyenv local 3.11.4`<br>
-#### Install poetry
-`pip install poetry`<br>
-#### Create new poetry virtualenv
-`poetry env use 3.11.4`<br>
-#### Install dependencies
-`poetry install`
+## Configuration
+Configuration is stored in `.env`, for examples see `.env.example`
 
-Go to the folder where you cloned the project. Add variables to the dotenv file
-### Variables of the dotenv file
+## Installing on a local machine
+This project requires python 3.11. Python virtual environment should be installed and activated.
+ Dependencies are managed by [poetry](https://python-poetry.org/) with requirements stored in `pyproject.toml`.
 
-### Django settings
+Install requirements:
 
-| Name          | Sample                 |
-|---------------|------------------------|
-| SECRET_KEY    | django-insecure-8x92vy |
-| DEBUG         | False                  |
-| ALLOWED_HOSTS | localhost              |
-| RUN_CELERY    | False                  |
-
-
-### Settings of the SQL
-
-| Name              | Sample            |
-|-------------------|-------------------|
-| POSTGRES_DB       | postgres_db       |
-| POSTGRES_USER     | postgres_user     |
-| POSTGRES_PASSWORD | postgres_password |
-| POSTGRES_HOST     | 127.0.0.1         |
-| POSTGRES_PORT     | 5432              |
+```bash
+poetry install
+```
 
 ### Docker
 Then run the following command in the same directory as the `docker-compose.yml` file to start the container.
-`docker compose up`
+`docker compose up -d`
 
 ### Sending email
-To use sending email, you should set up RUN_CELERY=True. Also, run redis by the a command
+To use sending email, you should set up RUN_CELERY=True. Also, run redis by the command
 
 `docker run -d -p 6379:6379 redis`
 
-### To run tests
-`poetry run pytest`
+Testing:
+```bash
+# run lint
+make lint
 
-
+# run unit tests
+make test
+```

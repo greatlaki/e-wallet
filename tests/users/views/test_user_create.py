@@ -97,9 +97,7 @@ class TestPost:
     @pytest.mark.skipif(not settings.CELERY_RUN, reason="requires running Celery")
     @mock.patch.object(send_registration_email, "delay")
     @pytest.mark.django_db
-    def test_it_sends_message_to_email_upon_successful_registration(
-        self, mock_delay, api_client
-    ):
+    def test_it_sends_message_to_email_upon_successful_registration(self, mock_delay, api_client):
         user = UserFactory.build()
         data = {
             "first_name": user.first_name,
@@ -117,9 +115,7 @@ class TestPost:
     @pytest.mark.skipif(not settings.CELERY_RUN, reason="requires running Celery")
     @mock.patch.object(send_registration_email, "delay")
     @pytest.mark.django_db
-    def test_it_does_not_send_message_if_registration_failed(
-        self, mock_delay, api_client
-    ):
+    def test_it_does_not_send_message_if_registration_failed(self, mock_delay, api_client):
         user = UserFactory.build()
         data = {
             "first_name": user.first_name,

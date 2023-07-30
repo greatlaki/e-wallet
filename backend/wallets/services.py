@@ -5,9 +5,7 @@ from django_extended.constants import TransactionType
 from wallets.models import Wallet
 
 
-def wallet_transactions(
-    wallet_id: int, receiver_id: int, amount: Decimal, transaction_type: str
-):
+def wallet_transactions(wallet_id: int, receiver_id: int, amount: Decimal, transaction_type: str):
     wallet = Wallet.objects.get(id=wallet_id)
     match transaction_type:
         case TransactionType.DEPOSIT:
@@ -25,9 +23,7 @@ def wallet_transactions(
     wallet.save()
 
 
-def cancel_wallet_transactions(
-    wallet_id: int, receiver_id: int, amount: Decimal, transaction_type: str
-):
+def cancel_wallet_transactions(wallet_id: int, receiver_id: int, amount: Decimal, transaction_type: str):
     wallet = Wallet.objects.get(id=wallet_id)
     match transaction_type:
         case TransactionType.DEPOSIT:
