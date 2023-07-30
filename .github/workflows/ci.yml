@@ -64,7 +64,7 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_TOKEN }}
         with:
           coverageLocations: |
-            ${{github.workspace}}/coverage.xml
+            ${{github.workspace}}/coverage.xml:coverage.py
 
       - name: Lint
         run: poetry run ruff .
