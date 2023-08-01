@@ -14,7 +14,7 @@ repos:
     args: [--autofix]
 
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 23.7.0
   hooks:
     - id: black
 
@@ -24,7 +24,7 @@ repos:
   - id: mypy
     args: [--install-types, --non-interactive]
 
-- repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: v0.0.280
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.0.281
   hooks:
     - id: ruff
