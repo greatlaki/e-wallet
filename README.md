@@ -27,10 +27,6 @@ poetry install
 Then run the following command in the same directory as the `docker-compose.yml` file to start the container.
 `docker compose up -d`
 
-### Sending email
-To use sending email, you should set up RUN_CELERY=True. Also, run redis by the command
-
-`docker run -d -p 6379:6379 redis`
 
 Testing:
 ```bash
