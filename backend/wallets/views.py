@@ -57,15 +57,6 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
             return Transaction.objects.all()
         return Transaction.objects.filter(Q(wallet__owner_id=user.pk) | Q(receiver__id=user.pk))
 
-    # def post(self, request, *args, **kwargs):
-    #     create_transaction = self.create(request, *args, **kwargs)
-    #     producer = KafkaProducer(
-    #         bootstrap_servers=["kafka:29092"],
-    #         api_version=(0, 11, 5),
-    #         value_serializer=lambda x: dumps(x).encode("utf-8"),
-    #     )
-    #     producer.send("transactions_create", value=create_transaction)
-
 
 class TransactionRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = TransactionRetrieveUpdateSerializer

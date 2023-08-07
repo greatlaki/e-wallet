@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     # Local
-    "wallets.apps.WalletsConfig",
+    "faustapp.apps.FaustappConfig" "wallets.apps.WalletsConfig",
     "users.apps.UsersConfig",
 ]
 
@@ -138,3 +138,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = 587
+
+# Faust settings (used in faustapp/app.py)
+FAUST_BROKER_URL = "kafka://localhost:29092"
+FAUST_STORE_URL = "rocksdb://"
