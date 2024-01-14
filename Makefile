@@ -17,6 +17,7 @@ server:
 
 lint:
 	poetry run ruff .
+	poetry run mypy .
 
 test:
 	poetry run coverage run -m pytest
