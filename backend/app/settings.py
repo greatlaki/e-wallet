@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     # Local
-    "faustapp.apps.FaustappConfig" "wallets.apps.WalletsConfig",
+    "faustapp.apps.FaustappConfig",
+    "wallets.apps.WalletsConfig",
     "users.apps.UsersConfig",
 ]
 
