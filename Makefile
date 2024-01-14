@@ -1,3 +1,11 @@
+.PHONY: format
+format:
+	poetry run black .
+	ruff . --fix
+	poetry run ruff . --fix --exit-zero
+	poetry run pre-commit run --all
+	poetry run mypy .
+
 up:
 	docker compose -f docker-compose.yml up -d
 

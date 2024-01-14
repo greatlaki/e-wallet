@@ -25,6 +25,8 @@ fastapi = "^0.101.0"
 uvicorn = "^0.23.2"
 faust-streaming = "^0.10.15"
 confluent-kafka = "^2.2.0"
+black = "^23.12.1"
+mypy = "^1.8.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -38,7 +40,7 @@ python_files = "tests.py test_*.py *_tests.py"
 
 [tool.black]
 line-length = 120
-exclude = ".venv /static/*"
+skip-string-normalization = true
 
 [tool.mypy]
 python_version = "3.11"
