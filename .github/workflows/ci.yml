@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test-lint:
-    name: Test and Lint
+    name: Test & Lint
     runs-on: ubuntu-20.04
 
     services:
@@ -37,6 +37,12 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          ls
+          cat .env
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -66,4 +72,4 @@ jobs:
             ${{github.workspace}}/coverage.xml:coverage.py
 
       - name: Lint
-        run: poetry run ruff .
+        run: make lint

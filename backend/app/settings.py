@@ -139,14 +139,6 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = 587
 
-# Celery run
-CELERY_RUN = env.bool("CELERY_RUN", False)
-
-REDIS_HOST = "0.0.0.0"
-REDIS_PORT = "6379"
-CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
+# Faust settings (used in faustapp/app.py)
+FAUST_BROKER_URL = "kafka://localhost:29092"
+FAUST_STORE_URL = "rocksdb://"
