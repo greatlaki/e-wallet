@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 
 from django_extended.constants import (
     MINIMUM_TRANSFER_RATE,
@@ -14,18 +15,18 @@ from wallets.services import cancel_wallet_transactions, wallet_transactions
 class TransactionBaseSerializer(serializers.ModelSerializer):
     wallet_balance = serializers.DecimalField(source="wallet.balance", max_digits=32, decimal_places=2, read_only=True)
 
-    def validate_amount(self, amount: Decimal):
+    def validate_amount(self, amount: Decimal) -> Decimal:
         if amount < MINIMUM_TRANSFER_RATE:
             raise serializers.ValidationError({"amount": "Insufficient transfer amount, the minimum amount is 0.1"})
         return amount
 
-    def validate_wallet_id(self, wallet_id: int):
+    def validate_wallet_id(self, wallet_id: int) -> int:
         wallet_exists = Wallet.objects.filter(id=wallet_id).exists()
         if not wallet_exists:
             raise serializers.ValidationError({"wallet_id": "The wallet does not exist."})
         return wallet_id
 
-    def validate_receiver_id(self, receiver_id: int):
+    def validate_receiver_id(self, receiver_id: int) -> int | None:
         if receiver_id is None:
             return
         wallet_exists = Wallet.objects.filter(id=receiver_id).exists()
@@ -35,11 +36,11 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
 
     def validation_wallet_balance(
         self,
-        wallet_id: int,
-        amount: Decimal,
+        wallet_id: int | None,
+        amount: Decimal | None,
         transaction_type: str,
         request_method: str,
-    ):
+    ) -> None:
         if amount is None:
             return
         if request_method == RequestMethods.PATCH and wallet_id is None:
@@ -55,7 +56,7 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_wallet_transaction(
         user: User,
-        wallet_id: int,
+        wallet_id: int | None,
         receiver_id: int,
         transaction_type: str,
         request_method: str,
@@ -84,13 +85,13 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
         if receiver_id and wallet_id == receiver_id:
             raise serializers.ValidationError({"receiver_id": "The recipient cannot be the sender"})
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]):
         user = self.context["request"].user
         request_method = self.context["request"].method
-        wallet_id = attrs.get("wallet_id")
-        receiver_id = attrs.get("receiver_id")
+        wallet_id = attrs.get("wallet_id", None)
+        receiver_id = attrs["receiver_id"]
         amount = attrs.get("amount")
-        transaction_type = attrs.get("transaction_type")
+        transaction_type = attrs.get("transaction_type", "")
         self.validation_wallet_balance(wallet_id, amount, transaction_type, request_method)
         self.validate_wallet_transaction(user, wallet_id, receiver_id, transaction_type, request_method)
         return attrs
@@ -116,11 +117,11 @@ class TransactionListCreateSerializer(TransactionBaseSerializer):
             "wallet_balance",
         )
 
-    def create(self, validated_data):
-        wallet_id = validated_data.get("wallet_id")
+    def create(self, validated_data: dict[str, Any]):
+        wallet_id = validated_data["wallet_id"]
         receiver_id = validated_data.get("receiver_id")
-        amount = validated_data.get("amount")
-        transaction_type = validated_data.get("transaction_type")
+        amount = validated_data["amount"]
+        transaction_type = validated_data["transaction_type"]
         wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
         return super().create(validated_data)
 
@@ -142,7 +143,7 @@ class TransactionRetrieveUpdateSerializer(TransactionBaseSerializer):
             "wallet_balance",
         )
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data: dict[str, Any]):
         wallet_id = instance.wallet.id
         receiver_id = None
         if instance.receiver:
@@ -151,7 +152,7 @@ class TransactionRetrieveUpdateSerializer(TransactionBaseSerializer):
         transaction_type = instance.transaction_type
         cancellation_type = validated_data.get("transaction_type")
         wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
-        if cancellation_type:
+        if cancellation_type and receiver_id is not None:
             cancel_wallet_transactions(wallet_id, receiver_id, amount, transaction_type)
             instance.transaction_type = cancellation_type
         instance.amount = amount

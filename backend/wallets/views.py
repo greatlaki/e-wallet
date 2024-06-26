@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django_extended.constants import RequestMethods
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +18,7 @@ class WalletsListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = WalletsListCreateSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = self.request.user
         if user.is_admin:
             return Wallet.objects.all()
@@ -29,7 +29,7 @@ class WalletsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     permission_classes = [IsAuthenticated]
     serializer_class = WalletsRetrieveUpdateDestroySerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = self.request.user
         if user.is_admin:
             return Wallet.objects.all()
@@ -40,7 +40,7 @@ class WalletsBalanceAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = WalletsBalanceSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = self.request.user
         if user.is_admin:
             return Wallet.objects.all()
@@ -51,7 +51,7 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = TransactionListCreateSerializer
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> QuerySet:
         user = self.request.user
         if user.is_admin:
             return Transaction.objects.all()
@@ -61,7 +61,7 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
 class TransactionRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = TransactionRetrieveUpdateSerializer
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> QuerySet:
         user = self.request.user
         if user.is_admin:
             return Transaction.objects.all()

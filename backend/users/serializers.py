@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import auth
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
@@ -14,7 +16,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id", "email", "password", "confirm_password")
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         email = attrs.get("email")
         password = attrs.get("password")
 
@@ -27,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         attrs.pop("confirm_password")
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]) -> User:
         return User.objects.create_user(**validated_data)
 
 
@@ -39,7 +41,7 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id", "email", "password")
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         email = attrs.get("email")
         password = attrs.get("password")
 

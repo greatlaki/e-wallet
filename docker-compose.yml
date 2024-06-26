@@ -4,6 +4,7 @@ services:
   app:
     build:
       context: .
+    container_name: e-wallet
     command: |
       sh -c '
         python manage.py collectstatic --noinput
@@ -20,7 +21,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
 

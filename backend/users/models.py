@@ -21,16 +21,16 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     class Meta:
         db_table = "users"
 
-    def get_wallets_ids(self):
+    def get_wallets_ids(self) -> list[int]:
         return self.wallets.values_list("id", flat=True)
 
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN
 
     @property
-    def is_wallet_owner(self):
+    def is_wallet_owner(self) -> bool:
         return self.role == UserRole.WALLET_OWNER
 
-    def __str__(self):
+    def __str__(self) -> models.EmailField:
         return self.email

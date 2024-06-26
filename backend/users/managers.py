@@ -1,13 +1,12 @@
-from typing import Optional
-
 from django.contrib.auth.models import BaseUserManager
 from django_extended.constants import UserRole
+from django.db import models
 
 
 class UserManager(BaseUserManager):
     """Manager for users"""
 
-    def create_user(self, email: str, password: Optional[str] = None, **extra_fields):
+    def create_user(self, email: str, password: str | None = None, **extra_fields) -> models.Model:
         """Create and save a User with the given email and password."""
         if not email:
             raise ValueError("User must have an email address")
@@ -18,7 +17,7 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email: str, password: Optional[str] = None, **extra_fields):
+    def create_superuser(self, email: str, password: str | None = None, **extra_fields) -> models.Model:
         """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)

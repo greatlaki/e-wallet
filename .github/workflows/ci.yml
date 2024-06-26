@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test-lint:
-    name: Test and Lint
+    name: Test & Lint
     runs-on: ubuntu-20.04
 
     services:
@@ -66,4 +66,4 @@ jobs:
             ${{github.workspace}}/coverage.xml:coverage.py
 
       - name: Lint
-        run: poetry run ruff .
+        run: make lint

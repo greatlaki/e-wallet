@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 
 from django.core.validators import MinValueValidator
 from django_extended.constants import RequestMethods
@@ -25,14 +26,14 @@ class WalletsListCreateSerializer(serializers.ModelSerializer):
             "balance",
         )
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]):
         request = self.context.get("request")
         if request and request.method == RequestMethods.POST:
             attrs.pop("wallet_number", None)
             attrs.pop("balance", None)
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]):
         user = self.context["request"].user
         if not user.is_admin:
             validated_data["owner_id"] = user.id
@@ -51,7 +52,7 @@ class WalletsRetrieveUpdateDestroySerializer(serializers.ModelSerializer):
             "balance",
         )
 
-    def validate_balance(self, balance: Decimal):
+    def validate_balance(self, balance: Decimal) -> Decimal:
         user = self.context["request"].user
         if user.is_wallet_owner and balance:
             raise serializers.ValidationError({"balance": "The user cannot change the balance"})
